@@ -97,6 +97,7 @@ renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.15;
+
 document.getElementById('game').appendChild(renderer.domElement);
 
 // LIGHTING
@@ -112,7 +113,7 @@ sun.shadow.camera.top=35;
 sun.shadow.camera.bottom=-35;
 scene.add(sun);
 
-// MATERIALS AND SHAPES
+// MATERIALS
 const material=(c,r=.85)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
 
 const mats={
@@ -129,6 +130,7 @@ skin:material(0xc98d6b),
 black:material(0x28201d)
 };
 
+// SHAPE HELPERS
 function mesh(geo,mat,x,y,z,parent=scene){
 const o=new THREE.Mesh(geo,mat);
 o.position.set(x,y,z);
@@ -208,72 +210,55 @@ ball(-.9,.15,.1,.8,0xffffff,g);
 g.position.set(x,y,z);
 }
 
-// MOUNTAINS
-function makeMountains(){
-for(let i=0;i<13;i++){
-let s=9+Math.random()*9;
-
-let m=mesh(
-new THREE.ConeGeometry(s,s*1.7,5),
-material(0x829fa9),
-(i-6)*12,
-s*.75,
--52-Math.random()*15
-);
-
-m.rotation.y=Math.random();
-}
-
-for(let i=0;i<6;i++){
-makeCloud(-35+i*14,24+Math.random()*7,-45);
-}
-}
-
-
+// UPGRADED MOUNTAINS
 function makeMountains(){
 
 // Distant mountain range
 for(let i=0;i<17;i++){
-  let s=10+Math.random()*9;
-  let x=(i-8)*11;
-  let z=-58-Math.random()*12;
+let s=10+Math.random()*9;
+let x=(i-8)*11;
+let z=-58-Math.random()*12;
 
-  let mountain=mesh(
-    new THREE.ConeGeometry(s,s*1.7,7),
-    material([0x8299a8,0x718c9b,0x91a6b0][i%3]),
-    x,s*.75,z
-  );
+let mountain=mesh(
+new THREE.ConeGeometry(s,s*1.7,7),
+material([0x8299a8,0x718c9b,0x91a6b0][i%3]),
+x,s*.75,z
+);
 
-  mountain.rotation.y=Math.random()*.5;
+mountain.rotation.y=Math.random()*.5;
 
-  // Snow-covered mountain peak
-  let snow=mesh(
-    new THREE.ConeGeometry(s*.27,s*.43,7),
-    material(0xf1f3f1),
-    x,s*1.42,z
-  );
+// Snow-covered mountain peak
+let snow=mesh(
+new THREE.ConeGeometry(s*.27,s*.43,7),
+material(0xf1f3f1),
+x,s*1.42,z
+);
 
-  snow.rotation.y=mountain.rotation.y;
+snow.rotation.y=mountain.rotation.y;
 }
 
 // Closer forested hills
 for(let i=0;i<11;i++){
-  let s=7+Math.random()*5;
-  let x=(i-5)*15;
+let s=7+Math.random()*5;
+let x=(i-5)*15;
 
-  mesh(
-    new THREE.ConeGeometry(s,s*1.25,8),
-    material(i%2?0x638b80:0x73988b),
-    x,s*.55,-37-Math.random()*7
-  );
+mesh(
+new THREE.ConeGeometry(s,s*1.25,8),
+material(i%2?0x638b80:0x73988b),
+x,s*.55,-37-Math.random()*7
+);
 }
 
 // Soft clouds
 for(let i=0;i<9;i++){
-  makeCloud(-48+i*12,23+Math.random()*8,-43);
+makeCloud(-48+i*12,23+Math.random()*8,-43);
 }
 }
 
+// IMPORTANT: GENERATE MOUNTAINS
+makeMountains();
+
+// TREES AND FLOWERS
 for(let i=0;i<55;i++){
 let x=(Math.random()-.5)*65;
 let z=(Math.random()-.5)*65;
@@ -308,7 +293,9 @@ box(10,.55,z,.15,1.1,.15,0x9c7049,g);
 }
 
 makeFence();
-addWorldDetails(THREE, scene);
+
+// ADD GARDEN DETAILS
+addWorldDetails(THREE,scene);
 
 // HOUSE
 function buildHouse(tier){
@@ -326,7 +313,7 @@ let roof=[0x9b513a,0x75453e,0x344f61][tier];
 box(0,h/2,-3,w,h,depth,wall,g);
 box(0,.12,-3,w+.5,.25,depth+.5,0x98765c,g);
 
-// Roof
+// ROOF
 let left=box(-w*.25,h+.65,-3,w*.72,.22,depth+.9,roof,g);
 left.rotation.z=-.48;
 
@@ -335,18 +322,18 @@ right.rotation.z=.48;
 
 box(0,h+1.15,-3,.22,.25,depth+.95,0x71463b,g);
 
-// Door
+// DOOR
 box(0,1.15,-.72,1.15,2.3,.15,0x70462e,g);
 ball(.38,1.1,-.61,.07,0xf5cb6d,g);
 
-// Windows
+// WINDOWS
 for(let x of [-w*.3,w*.3]){
 box(x,2,-.69,1.25,1.1,.12,0x75bde0,g);
 box(x,2,.01,1.38,.09,.08,0xffffff,g);
 box(x,2,.0,.08,1.2,.08,0xffffff,g);
 }
 
-// Porch
+// PORCH
 if(tier>0){
 box(0,2.35,.2,w*.85,.2,1.8,0x9c7049,g);
 
@@ -360,7 +347,7 @@ box(0,h+2.5,-3,3,.15,depth*.8,0x8a6849,g);
 }
 }
 
-// CHARACTERS FROM SEPARATE FILE
+// CHARACTERS
 const vasu=makePerson(scene,false);
 const shelly=makePerson(scene,true);
 
@@ -407,7 +394,6 @@ for(let z of [-.23,.23]){
 mesh(new THREE.CylinderGeometry(.07,.09,.45,10),fur,x,.22,z,g);
 }
 }
-
 g.userData.name=name;
 scene.add(g);
 return g;
@@ -449,7 +435,6 @@ material(0x202020),x,.35,z,g
 wheel.rotation.z=Math.PI/2;
 }
 }
-
 scene.add(g);
 return g;
 }
@@ -464,7 +449,6 @@ status(name+' added!');
 // BABIES
 window.addBaby=(name)=>{
 let b=makePerson(scene,name==='Baby girl');
-
 b.scale.setScalar(.52);
 b.position.set(-1+babies.length*.8,0,3.5);
 babies.push(b);
@@ -515,7 +499,6 @@ status('❤️ Family portrait ready! Take a screenshot.');
 
 // JOYSTICK
 let moving={x:0,y:0};
-
 let joy=document.getElementById('joystick');
 let stick=document.getElementById('stick');
 
@@ -542,10 +525,8 @@ stick.style.transform='translate(0,0)';
 
 function moveJoy(e){
 let r=joy.getBoundingClientRect();
-
 let x=e.clientX-r.left-55;
 let y=e.clientY-r.top-55;
-
 let d=Math.hypot(x,y);
 let s=Math.min(35,d);
 
