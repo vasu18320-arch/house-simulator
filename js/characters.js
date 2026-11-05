@@ -4,52 +4,167 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 export function makePerson(scene, isGirl = false) {
   const g = new THREE.Group();
 
-  const material = (color) =>
-    new THREE.MeshStandardMaterial({ color, roughness: 0.85 });
+  const mat = (color, roughness = 0.8) =>
+    new THREE.MeshStandardMaterial({ color, roughness });
 
-  const skin = material(0xc98b68);
-  const hair = material(isGirl ? 0x15101b : 0x241b17);
-  const clothes = material(isGirl ? 0xe88db4 : 0x4b83c8);
+  const skin = mat(0xc98b70);
+  const skinLight = mat(0xdca184);
+  const hair = mat(isGirl ? 0x17111c : 0x211916);
+  const hairLight = mat(isGirl ? 0x30202c : 0x39251d);
+  const white = mat(0xffffff);
+  const iris = mat(0x38231d);
+  const pupil = mat(0x100b0a);
+  const shoe = mat(0x352b2a);
+  const pants = mat(isGirl ? 0x493a55 : 0x35445e);
+  const shirt = mat(isGirl ? 0xe879aa : 0x4b85ce);
+  const shirtLight = mat(isGirl ? 0xffa8cc : 0x77b3ed);
 
-  function part(geo, mat, x, y, z) {
-    const o = new THREE.Mesh(geo, mat);
+  function part(geo, material, x, y, z, parent = g) {
+    const o = new THREE.Mesh(geo, material);
     o.position.set(x, y, z);
     o.castShadow = true;
     o.receiveShadow = true;
-    g.add(o);
+    parent.add(o);
     return o;
   }
 
-  // Body and head
-  part(new THREE.CapsuleGeometry(.38, .8, 5, 12), clothes, 0, 1.05, 0);
-  part(new THREE.SphereGeometry(.43, 24, 20), skin, 0, 2, 0);
-  part(new THREE.SphereGeometry(.45, 20, 16), hair, 0, 2.27, -.12);
+  function sphere(x, y, z, sx, sy, sz, material, parent = g) {
+    const o = part(
+      new THREE.SphereGeometry(1, 24, 20),
+      material, x, y, z, parent
+    );
+    o.scale.set(sx, sy, sz);
+    return o;
+  }
+
+  // BODY
+  const body = sphere(0, 1.17, 0, .43, .58, .29, shirt);
+  body.scale.y = 1.25;
+
+  // Decorative shirt collar
+  sphere(0, 1.63, .05, .23, .10, .24, shirtLight);
+
+  // Head
+  sphere(0, 2.05, 0, .43, .48, .39, skin);
+
+  // Ears
+  for (const x of [-.43, .43]) {
+    sphere(x, 2.04, 0, .10, .14, .09, skinLight);
+  }
+
+  // Hair cap
+  sphere(0, 2.36, -.055, .46, .27, .41, hair);
+
+  // Hairline
+  sphere(0, 2.29, .22, .34, .12, .22, hair);
 
   if (isGirl) {
-    part(new THREE.SphereGeometry(.28, 16, 12), hair, -.38, 1.98, -.05);
-    part(new THREE.SphereGeometry(.28, 16, 12), hair, .38, 1.98, -.05);
+    // Long flowing hair behind the head
+    sphere(0, 1.83, -.29, .43, .65, .19, hair);
+    sphere(-.37, 1.75, -.12, .16, .53, .17, hair);
+    sphere(.37, 1.75, -.12, .16, .53, .17, hair);
+
+    // Side locks
+    sphere(-.39, 1.48, -.10, .12, .38, .13, hairLight);
+    sphere(.39, 1.48, -.10, .12, .38, .13, hairLight);
+
+    // Bangs
+    sphere(-.18, 2.30, .30, .20, .13, .12, hairLight);
+    sphere(.06, 2.32, .31, .19, .12, .12, hair);
+    sphere(.27, 2.27, .28, .15, .12, .13, hair);
+  } else {
+    // Short textured hairstyle
+    sphere(-.27, 2.47, .04, .20, .17, .24, hairLight);
+    sphere(-.08, 2.52, .02, .20, .17, .24, hair);
+    sphere(.13, 2.49, .03, .21, .17, .23, hairLight);
+    sphere(.29, 2.42, .02, .15, .14, .20, hair);
   }
 
-  // Eyes and nose
+  // EYEBROWS
   for (const x of [-.16, .16]) {
-    part(new THREE.SphereGeometry(.055, 12, 10), material(0xffffff), x, 2.04, .385);
-    part(new THREE.SphereGeometry(.027, 12, 10), material(0x241714), x, 2.04, .433);
+    const brow = sphere(x, 2.20, .345, .105, .035, .045, hair);
+    brow.rotation.z = x < 0 ? .10 : -.10;
   }
 
-  part(new THREE.SphereGeometry(.075, 12, 10), skin, 0, 1.91, .4);
-
-  // Arms
-  for (const x of [-.48, .48]) {
-    const arm = part(new THREE.CapsuleGeometry(.12, .58, 4, 8), clothes, x, 1.15, 0);
-    arm.rotation.z = x < 0 ? -.35 : .35;
-    part(new THREE.SphereGeometry(.13, 12, 10), skin, x * 1.2, .79, .02);
+  // BIG EXPRESSIVE EYES
+  for (const x of [-.16, .16]) {
+    sphere(x, 2.08, .355, .105, .12, .055, white);
+    sphere(x, 2.075, .402, .057, .078, .025, iris);
+    sphere(x, 2.075, .422, .034, .052, .014, pupil);
+    sphere(x - .018, 2.11, .437, .018, .022, .009, white);
   }
 
-  // Legs and shoes
+  // Nose
+  sphere(0, 1.99, .405, .055, .065, .06, skinLight);
+
+  // Smile
+  const smilePoints = [
+    new THREE.Vector3(-.09, 1.91, .365),
+    new THREE.Vector3(-.045, 1.885, .39),
+    new THREE.Vector3(0, 1.88, .397),
+    new THREE.Vector3(.045, 1.885, .39),
+    new THREE.Vector3(.09, 1.91, .365)
+  ];
+
+  const smileCurve = new THREE.CatmullRomCurve3(smilePoints);
+
+  part(
+    new THREE.TubeGeometry(smileCurve, 12, .012, 6, false),
+    mat(0x793e3a),
+    0, 0, 0
+  );
+
+  // CHEEKS
+  sphere(-.27, 1.96, .31, .09, .045, .025, mat(0xe9a0a0));
+  sphere(.27, 1.96, .31, .09, .045, .025, mat(0xe9a0a0));
+
+  // ARMS
+  for (const x of [-.49, .49]) {
+    const arm = part(
+      new THREE.CapsuleGeometry(.115, .48, 5, 12),
+      shirt, x, 1.15, 0
+    );
+
+    arm.rotation.z = x < 0 ? -.18 : .18;
+
+    sphere(x * 1.12, .82, .015, .13, .14, .13, skin);
+  }
+
+  // HANDS
+  for (const x of [-.55, .55]) {
+    sphere(x, .77, .03, .11, .12, .11, skin);
+  }
+
+  // LEGS
   for (const x of [-.19, .19]) {
-    part(new THREE.CapsuleGeometry(.14, .45, 4, 8), material(0x39435c), x, .28, 0);
-    part(new THREE.BoxGeometry(.3, .14, .48), material(0x342a27), x, .06, .12);
+    part(
+      new THREE.CapsuleGeometry(.14, .40, 5, 12),
+      pants, x, .38, 0
+    );
+
+    // Shoes
+    sphere(x, .09, .12, .18, .10, .27, shoe);
   }
+
+  // GIRL'S DRESS DETAIL
+  if (isGirl) {
+    const skirt = part(
+      new THREE.CylinderGeometry(.32, .52, .48, 24),
+      shirt, 0, .75, 0
+    );
+    skirt.scale.z = .85;
+
+    // Decorative waistline
+    sphere(0, .98, .015, .38, .045, .30, shirtLight);
+  }
+
+  // Small decorative buttons
+  for (const y of [1.32, 1.15]) {
+    sphere(0, y, .292, .035, .035, .018, shirtLight);
+  }
+
+  g.userData.isGirl = isGirl;
+  g.userData.baseScale = 1;
 
   scene.add(g);
   return g;
