@@ -1,642 +1,88 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>HOUSE SIMULATOR</title>
-
-<style>
-*{box-sizing:border-box}
-body{margin:0;overflow:hidden;font-family:Arial;background:#9bd2f2}
-#game{position:fixed;inset:0}
-#ui{position:fixed;inset:0;pointer-events:none;color:white}
-header{text-align:center;padding:14px;font-size:22px;font-weight:900;text-shadow:0 2px 6px #333}
-.panel{pointer-events:auto;position:absolute;top:65px;left:10px;width:190px;max-height:65vh;overflow:auto;background:#fffffff0;color:#333;border-radius:17px;padding:12px;box-shadow:0 4px 18px #0003}
-.panel h3{margin:9px 0;color:#7953a8}
-button{border:0;border-radius:10px;padding:10px;margin:3px;background:#8e69c8;color:white;font-weight:bold}
-.panel button{width:100%;text-align:left}
-#status{position:absolute;top:12px;right:10px;background:#ffffffdf;color:#333;border-radius:12px;padding:9px;font-size:11px}
-#joystick{position:absolute;bottom:25px;left:25px;width:110px;height:110px;border-radius:50%;background:#ffffff55;border:2px solid #fff;pointer-events:auto;touch-action:none}
-#stick{position:absolute;width:45px;height:45px;left:31px;top:31px;border-radius:50%;background:#fff;box-shadow:0 2px 7px #555}
-#portrait{position:absolute;right:15px;bottom:30px;pointer-events:auto;background:#e78da8}
-#message{position:absolute;bottom:155px;left:50%;transform:translateX(-50%);background:#222b;padding:8px 14px;border-radius:15px;font-size:12px;white-space:nowrap}
-#hide{position:absolute;right:10px;top:60px;pointer-events:auto}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#a8d5ed">
+  <title>HOUSE SIMULATOR</title>
+  <link rel="stylesheet" href="./css/style.css">
 </head>
-
 <body>
-<div id="game"></div>
-
-<div id="ui">
-<header>🏡 HOUSE SIMULATOR</header>
-<div id="status">Build your dream life ❤️</div>
-<button id="hide" onclick="togglePanel()">☰ MENU</button>
-
-<div class="panel" id="panel">
-<h3>🌍 Choose your world</h3>
-<button onclick="setWorld('Mountain')">🏔️ Mountain view</button>
-<button onclick="setWorld('Countryside')">🌳 Countryside</button>
-<button onclick="setWorld('City')">🏙️ City</button>
-
-<h3>🏠 Choose your house</h3>
-<button onclick="setHouse(0)">Simple house</button>
-<button onclick="setHouse(1)">Moderate house</button>
-<button onclick="setHouse(2)">Grand farmhouse</button>
-
-<h3>👗 Outfits</h3>
-<button onclick="outfit(0)">Casual</button>
-<button onclick="outfit(1)">Traditional</button>
-<button onclick="outfit(2)">Party outfit</button>
-
-<h3>🐾 Pets</h3>
-<button onclick="addPet('Cat')">🐈 Add cat</button>
-<button onclick="addPet('Dog')">🐕 Add dog</button>
-<button onclick="addPet('Cow')">🐄 Add cow</button>
-<button onclick="addPet('Parrot')">🦜 Add parrot</button>
-<button onclick="addPet('Hamster')">🐹 Add hamster</button>
-
-<h3>🚗 Vehicles</h3>
-<button onclick="addVehicle('SUV')">🚙 Big SUV</button>
-<button onclick="addVehicle('Car')">🚘 Small car</button>
-<button onclick="addVehicle('Pickup')">🛻 Pickup truck</button>
-<button onclick="addVehicle('Bike')">🏍️ Motorcycle</button>
-<button onclick="addVehicle('Bicycle')">🚲 Bicycle</button>
-<button onclick="addVehicle('Tractor')">🚜 Tractor</button>
-
-<h3>👶 Family</h3>
-<button onclick="addBaby('Baby girl')">🎀 Add baby girl</button>
-<button onclick="addBaby('Baby boy')">🧸 Add baby boy</button>
-<div id="family"></div>
-
-<button onclick="makePortrait()" style="background:#e78da8">❤️ Family portrait</button>
-</div>
-
-<div id="message">Move with joystick · Drag screen to look around</div>
-<div id="joystick"><div id="stick"></div></div>
-<button id="portrait" onclick="makePortrait()">📸 Family photo</button>
-</div>
-
-<script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { makePerson } from './js/characters.js';
-import { addWorldDetails } from './js/world.js';
-
-// SCENE
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x91cbed);
-scene.fog=new THREE.Fog(0x91cbed,45,125);
-
-const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,250);
-camera.position.set(0,8,16);
-
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.15;
-
-document.getElementById('game').appendChild(renderer.domElement);
-
-// LIGHTING
-scene.add(new THREE.HemisphereLight(0xd9efff,0x637a45,2));
-
-const sun=new THREE.DirectionalLight(0xfff2d4,3);
-sun.position.set(-20,30,15);
-sun.castShadow=true;
-sun.shadow.mapSize.set(1024,1024);
-sun.shadow.camera.left=-35;
-sun.shadow.camera.right=35;
-sun.shadow.camera.top=35;
-sun.shadow.camera.bottom=-35;
-scene.add(sun);
-
-// MATERIALS
-const material=(c,r=.85)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
-
-const mats={
-grass:material(0x6eae60),
-darkgrass:material(0x478b50),
-wood:material(0x805033),
-cream:material(0xf1dfbd),
-white:material(0xfff4df),
-glass:material(0x8bd1ed,.25),
-leaf:material(0x39824c),
-leaf2:material(0x5da85b),
-roof:material(0x984c38),
-skin:material(0xc98d6b),
-black:material(0x28201d)
-};
-
-// SHAPE HELPERS
-function mesh(geo,mat,x,y,z,parent=scene){
-const o=new THREE.Mesh(geo,mat);
-o.position.set(x,y,z);
-o.castShadow=true;
-o.receiveShadow=true;
-parent.add(o);
-return o;
-}
-
-function box(x,y,z,sx,sy,sz,c,parent=scene){
-return mesh(new THREE.BoxGeometry(sx,sy,sz),material(c),x,y,z,parent);
-}
-
-function ball(x,y,z,s,c,parent=scene){
-return mesh(new THREE.SphereGeometry(s,20,16),material(c),x,y,z,parent);
-}
-
-function cylinder(x,y,z,r1,r2,h,c,parent=scene){
-return mesh(new THREE.CylinderGeometry(r1,r2,h,12),material(c),x,y,z,parent);
-}
-
-// GROUND
-const ground=mesh(new THREE.PlaneGeometry(220,220),mats.grass,0,-.1,0);
-ground.rotation.x=-Math.PI/2;
-
-let scenery=[],houseParts=[],pets=[],vehicles=[],babies=[];
-
-function groupKeep(arr){
-const g=new THREE.Group();
-scene.add(g);
-arr.push(g);
-return g;
-}
-
-function clear(arr){
-arr.forEach(o=>scene.remove(o));
-arr.length=0;
-}
-
-// TREES
-function makeTree(x,z,size=1){
-const g=groupKeep(scenery);
-
-cylinder(0,size,0,.22*size,.3*size,2*size,0x79502f,g);
-ball(0,2.3*size,0,1.1*size,0x39824c,g);
-ball(-.55*size,2*size,.1,.75*size,0x5da85b,g);
-ball(.55*size,2.1*size,.15,.8*size,0x478d4b,g);
-ball(0,2.7*size,.2,.7*size,0x66aa5c,g);
-
-g.position.set(x,0,z);
-}
-
-// FLOWERS
-function makeFlower(x,z){
-const g=groupKeep(scenery);
-
-cylinder(0,.16,0,.025,.025,.3,0x358b40,g);
-
-for(let i=0;i<5;i++){
-let a=i*Math.PI*2/5;
-ball(Math.cos(a)*.12,.34,Math.sin(a)*.12,.09,
-[0xf5a5ba,0xffd45e,0xffffff][i%3],g);
-}
-
-ball(0,.34,0,.07,0xe9a52c,g);
-g.position.set(x,0,z);
-}
-
-// CLOUDS
-function makeCloud(x,y,z){
-const g=groupKeep(scenery);
-
-ball(0,0,0,1.2,0xffffff,g);
-ball(1,.2,0,.85,0xffffff,g);
-ball(-.9,.15,.1,.8,0xffffff,g);
-
-g.position.set(x,y,z);
-}
-
-// SNOW-COVERED MOUNTAIN RANGE
-function makeMountains(){
-
-  const rockColors = [
-    0x718b9b,
-    0x829eaa,
-    0x647f91,
-    0x91a8b2
-  ];
-
-  // Distant mountain peaks
-  for(let i=0;i<19;i++){
-
-    const x=(i-9)*10;
-    const height=17+Math.random()*13;
-    const width=8+Math.random()*4;
-    const z=-65-Math.random()*8;
-
-    const mountain=mesh(
-      new THREE.ConeGeometry(width,height,7),
-      material(rockColors[i%4]),
-      x,height/2-1,z
-    );
-
-    mountain.rotation.y=Math.random()*.4;
-
-    // Snow cap
-    const snowHeight=height*.38;
-
-    const snow=mesh(
-      new THREE.ConeGeometry(width*.34,snowHeight,7),
-      material(0xf7fbff),
-      x,height-snowHeight*.35-1,z
-    );
-
-    snow.rotation.y=mountain.rotation.y;
-  }
-
-  // Layered green foothills
-  for(let i=0;i<15;i++){
-
-    const x=(i-7)*11;
-
-    mesh(
-      new THREE.SphereGeometry(1,16,12),
-      material(i%2?0x557e68:0x73977b),
-      x,2,-43
-    ).scale.set(8,5+Math.random()*3,6);
-  }
-
-  // Distant clouds
-  for(let i=0;i<12;i++){
-    makeCloud(
-      -55+i*10,
-      25+Math.random()*9,
-      -48
-    );
-  }
-}
-// Distant mountain range
-for(let i=0;i<17;i++){
-let s=10+Math.random()*9;
-let x=(i-8)*11;
-let z=-58-Math.random()*12;
-
-let mountain=mesh(
-new THREE.ConeGeometry(s,s*1.7,7),
-material([0x8299a8,0x718c9b,0x91a6b0][i%3]),
-x,s*.75,z
-);
-
-mountain.rotation.y=Math.random()*.5;
-
-// Snow-covered mountain peak
-let snow=mesh(
-new THREE.ConeGeometry(s*.27,s*.43,7),
-material(0xf1f3f1),
-x,s*1.42,z
-);
-
-snow.rotation.y=mountain.rotation.y;
-}
-
-// Closer forested hills
-for(let i=0;i<11;i++){
-let s=7+Math.random()*5;
-let x=(i-5)*15;
-
-mesh(
-new THREE.ConeGeometry(s,s*1.25,8),
-material(i%2?0x638b80:0x73988b),
-x,s*.55,-37-Math.random()*7
-);
-}
-
-// Soft clouds
-for(let i=0;i<9;i++){
-makeCloud(-48+i*12,23+Math.random()*8,-43);
-}
-}
-
-// IMPORTANT: GENERATE MOUNTAINS
-makeMountains();
-
-// TREES AND FLOWERS
-for(let i=0;i<55;i++){
-let x=(Math.random()-.5)*65;
-let z=(Math.random()-.5)*65;
-
-if(Math.abs(x)>8||Math.abs(z)>9){
-makeTree(x,z,.7+Math.random()*.6);
-}
-}
-
-for(let i=0;i<45;i++){
-makeFlower((Math.random()-.5)*30,(Math.random()-.5)*28);
-}
-
-// FENCE
-function makeFence(){
-const g=groupKeep(scenery);
-
-for(let x=-10;x<=10;x+=2){
-box(x,.55,-11,.15,1.1,.15,0x9c7049,g);
-box(x,.55,9,.15,1.1,.15,0x9c7049,g);
-}
-
-box(0,.85,-11,21,.15,.15,0xb88a5c,g);
-box(0,.35,-11,21,.15,.15,0xb88a5c,g);
-box(0,.85,9,21,.15,.15,0xb88a5c,g);
-box(0,.35,9,21,.15,.15,0xb88a5c,g);
-
-for(let z=-11;z<=9;z+=2){
-box(-10,.55,z,.15,1.1,.15,0x9c7049,g);
-box(10,.55,z,.15,1.1,.15,0x9c7049,g);
-}
-}
-
-makeFence();
-
-// ADD GARDEN DETAILS
-addWorldDetails(THREE,scene);
-
-// HOUSE
-function buildHouse(tier){
-clear(houseParts);
-
-const g=groupKeep(houseParts);
-
-let w=[5.5,7.5,10][tier];
-let h=[3.1,3.8,4.5][tier];
-let depth=[4.5,5.5,7][tier];
-
-let wall=[0xe8cba4,0xf0e5d1,0xfff5e7][tier];
-let roof=[0x9b513a,0x75453e,0x344f61][tier];
-
-box(0,h/2,-3,w,h,depth,wall,g);
-box(0,.12,-3,w+.5,.25,depth+.5,0x98765c,g);
-
-// ROOF
-let left=box(-w*.25,h+.65,-3,w*.72,.22,depth+.9,roof,g);
-left.rotation.z=-.48;
-
-let right=box(w*.25,h+.65,-3,w*.72,.22,depth+.9,roof,g);
-right.rotation.z=.48;
-
-box(0,h+1.15,-3,.22,.25,depth+.95,0x71463b,g);
-
-// DOOR
-box(0,1.15,-.72,1.15,2.3,.15,0x70462e,g);
-ball(.38,1.1,-.61,.07,0xf5cb6d,g);
-
-// WINDOWS
-for(let x of [-w*.3,w*.3]){
-box(x,2,-.69,1.25,1.1,.12,0x75bde0,g);
-box(x,2,.01,1.38,.09,.08,0xffffff,g);
-box(x,2,.0,.08,1.2,.08,0xffffff,g);
-}
-
-// PORCH
-if(tier>0){
-box(0,2.35,.2,w*.85,.2,1.8,0x9c7049,g);
-
-for(let x of [-w*.37,w*.37]){
-cylinder(x,1.25,.75,.09,.09,2.3,0xf3e4c9,g);
-}
-}
-
-if(tier===2){
-box(0,h+2.5,-3,3,.15,depth*.8,0x8a6849,g);
-}
-}
-
-// CHARACTERS
-const vasu=makePerson(scene,false);
-const shelly=makePerson(scene,true);
-
-vasu.position.set(-1,0,2);
-shelly.position.set(1,0,2);
-
-buildHouse(0);
-
-// ANIMALS
-function makeAnimal(name){
-const g=new THREE.Group();
-
-let c=name==='Cow'?0xf0eee5:
-name==='Cat'?0x777777:
-name==='Dog'?0xa66b3e:
-name==='Parrot'?0x31a85d:0xc9a16d;
-
-const fur=material(c);
-
-mesh(new THREE.SphereGeometry(.5,20,16),fur,0,.55,0,g)
-.scale.set(1.3,.85,.8);
-
-mesh(new THREE.SphereGeometry(.3,18,14),fur,.52,.9,0,g);
-
-for(let x of [-.15,.15]){
-mesh(
-new THREE.SphereGeometry(.045,10,8),
-material(0x201815),
-.62,.94,x+.05,g
-);
-}
-
-if(name==='Cat'||name==='Parrot'){
-for(let x of [-.17,.17]){
-mesh(
-new THREE.ConeGeometry(.13,.35,8),
-fur,x,1.2,.15,g
-);
-}
-}
-
-for(let x of [-.3,.3]){
-for(let z of [-.23,.23]){
-mesh(new THREE.CylinderGeometry(.07,.09,.45,10),fur,x,.22,z,g);
-}
-}
-g.userData.name=name;
-scene.add(g);
-return g;
-}
-
-window.addPet=(name)=>{
-let g=makeAnimal(name);
-g.position.set(-5+pets.length*1.5,0,5);
-pets.push(g);
-status(name+' added!');
-};
-
-// VEHICLES
-function makeVehicle(name){
-const g=new THREE.Group();
-
-let color=name==='SUV'?0x294d7b:
-name==='Bike'?0xb72f35:
-name==='Tractor'?0x3d9d48:0xd4a13a;
-
-mesh(
-new THREE.BoxGeometry(name==='Bicycle'?1.8:2.7,.75,1.25),
-material(color),0,.85,0,g
-);
-
-if(name!=='Bicycle'&&name!=='Bike'){
-mesh(
-new THREE.BoxGeometry(1.35,.7,1.05),
-material(0x91cce0,.25),-.1,1.55,0,g
-);
-}
-
-for(let x of [-.9,.9]){
-for(let z of [-.68,.68]){
-let wheel=mesh(
-new THREE.CylinderGeometry(.34,.34,.2,20),
-material(0x202020),x,.35,z,g
-);
-wheel.rotation.z=Math.PI/2;
-}
-}
-scene.add(g);
-return g;
-}
-
-window.addVehicle=(name)=>{
-let g=makeVehicle(name);
-g.position.set(5+vehicles.length*3,0,5);
-vehicles.push(g);
-status(name+' added!');
-};
-
-// BABIES
-window.addBaby=(name)=>{
-let b=makePerson(scene,name==='Baby girl');
-b.scale.setScalar(.52);
-b.position.set(-1+babies.length*.8,0,3.5);
-babies.push(b);
-
-document.getElementById('family').textContent='Babies: '+babies.length;
-status(name+' added ❤️');
-};
-
-// HOUSE SELECTION
-window.setHouse=(t)=>{
-buildHouse(t);
-status(['Simple home','Beautiful family home','Grand farmhouse'][t]);
-};
-
-// OUTFITS
-window.outfit=(t)=>{
-vasu.children[0].material=material([0x4b83c8,0x9b573c,0x34345d][t]);
-shelly.children[0].material=material([0xe88db4,0xf2a64b,0x9a69c8][t]);
-status('Outfits changed!');
-};
-
-// WORLD SELECTION
-window.setWorld=(w)=>{
-scene.background=new THREE.Color(
-w==='Mountain'?0x91cbed:
-w==='City'?0xb6c5d4:0xb5dfa0
-);
-
-ground.material=material(w==='City'?0x888d8d:0x6eae60);
-status(w+' world selected!');
-};
-
-// UI
-function status(s){
-document.getElementById('status').textContent=s;
-}
-
-window.togglePanel=()=>{
-let p=document.getElementById('panel');
-p.style.display=p.style.display==='none'?'block':'none';
-};
-
-window.makePortrait=()=>{
-camera.position.set(0,7,15);
-camera.lookAt(0,1,0);
-status('❤️ Family portrait ready! Take a screenshot.');
-};
-
-// JOYSTICK
-let moving={x:0,y:0};
-let joy=document.getElementById('joystick');
-let stick=document.getElementById('stick');
-
-let joyActive=false;
-let screenActive=false;
-let lastX=0;
-let angle=0;
-
-joy.addEventListener('pointerdown',e=>{
-joyActive=true;
-joy.setPointerCapture(e.pointerId);
-moveJoy(e);
-});
-
-joy.addEventListener('pointermove',e=>{
-if(joyActive)moveJoy(e);
-});
-
-joy.addEventListener('pointerup',()=>{
-joyActive=false;
-moving={x:0,y:0};
-stick.style.transform='translate(0,0)';
-});
-
-function moveJoy(e){
-let r=joy.getBoundingClientRect();
-let x=e.clientX-r.left-55;
-let y=e.clientY-r.top-55;
-let d=Math.hypot(x,y);
-let s=Math.min(35,d);
-
-if(d){
-moving={x:x/d*s/35,y:y/d*s/35};
-}
-
-stick.style.transform=`translate(${moving.x*35}px,${moving.y*35}px)`;
-}
-
-// CAMERA SWIPE
-renderer.domElement.addEventListener('pointerdown',e=>{
-screenActive=true;
-lastX=e.clientX;
-});
-
-renderer.domElement.addEventListener('pointermove',e=>{
-if(screenActive&&e.buttons){
-angle-=(e.clientX-lastX)*.005;
-}
-lastX=e.clientX;
-});
-
-renderer.domElement.addEventListener('pointerup',()=>{
-screenActive=false;
-});
-
-// GAME LOOP
-function animate(){
-requestAnimationFrame(animate);
-
-vasu.position.x+=moving.x*.07;
-vasu.position.z+=moving.y*.07;
-
-shelly.position.x=vasu.position.x+1.3;
-shelly.position.z=vasu.position.z;
-
-camera.position.x=vasu.position.x+Math.sin(angle)*15;
-camera.position.z=vasu.position.z+Math.cos(angle)*15;
-
-camera.lookAt(vasu.position.x,1,vasu.position.z);
-
-renderer.render(scene,camera);
-}
-
-animate();
-
-// RESIZE
-addEventListener('resize',()=>{
-camera.aspect=innerWidth/innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(innerWidth,innerHeight);
-});
-
-</script>
+  <div id="game"></div>
+  <div id="loading"><div class="loading-card"><div class="loading-house">🏡</div><h1>HOUSE SIMULATOR</h1><p>Building your little world…</p><div class="loading-bar"><i></i></div></div></div>
+
+  <div id="ui">
+    <header class="topbar">
+      <div class="brand">🏡 HOUSE SIMULATOR</div>
+      <div id="status">Build your dream life ❤️</div>
+      <button id="menuToggle" class="round-button" aria-label="Open menu">☰</button>
+    </header>
+
+    <aside id="panel" class="panel">
+      <div class="panel-head"><div><small>YOUR LITTLE WORLD</small><h2>Customize life</h2></div><button id="closePanel" class="close-button">×</button></div>
+      <section>
+        <h3>🌍 Choose your world</h3>
+        <div class="button-grid three">
+          <button data-world="mountain">🏔️ Mountain</button>
+          <button data-world="countryside">🌳 Country</button>
+          <button data-world="city">🏙️ City</button>
+        </div>
+      </section>
+      <section>
+        <h3>🏠 Choose your home</h3>
+        <label class="field-label" for="houseTier">House size</label>
+        <select id="houseTier"><option value="0">Simple home</option><option value="1">Moderate home</option><option value="2">Grand farmhouse / villa</option></select>
+      </section>
+      <section>
+        <h3>👗 Outfits</h3>
+        <label class="field-label" for="vasuOutfit">Vasu</label>
+        <select id="vasuOutfit"><option value="0">Casual blue</option><option value="1">Traditional kurta</option><option value="2">Party outfit</option></select>
+        <label class="field-label" for="shellyOutfit">Shelly</label>
+        <select id="shellyOutfit"><option value="0">Pink casual</option><option value="1">Traditional Indian</option><option value="2">Party outfit</option></select>
+      </section>
+      <section>
+        <h3>🐾 Add pets</h3>
+        <div class="button-grid">
+          <button data-pet="Cat">🐈 Cat</button><button data-pet="Dog">🐕 Dog</button>
+          <button data-pet="Cow">🐄 Cow</button><button data-pet="Parrot">🦜 Parrot</button>
+          <button data-pet="Hamster">🐹 Hamster</button>
+        </div>
+      </section>
+      <section>
+        <h3>🚗 Add vehicles</h3>
+        <div class="button-grid">
+          <button data-vehicle="SUV">🚙 Big SUV</button><button data-vehicle="Car">🚘 Small car</button>
+          <button data-vehicle="Pickup">🛻 Pickup</button><button data-vehicle="Motorcycle">🏍️ Motorcycle</button>
+          <button data-vehicle="Bicycle">🚲 Bicycle</button><button data-vehicle="Tractor">🚜 Tractor</button>
+        </div>
+      </section>
+      <section>
+        <h3>👶 Grow your family</h3>
+        <div class="button-grid two">
+          <button data-baby="girl">🎀 Baby girl</button><button data-baby="boy">🧸 Baby boy</button>
+        </div>
+        <div id="familyCount" class="small-note">No babies yet</div>
+      </section>
+      <section class="actions">
+        <button id="portraitButton" class="primary">❤️ Family portrait</button>
+        <button id="saveButton">💾 Save our world</button>
+        <button id="loadButton">↩️ Load saved world</button>
+        <button id="resetButton" class="danger">Reset game</button>
+      </section>
+      <p class="hint">Tip: drag the open world to look around. Use the joystick to walk.</p>
+    </aside>
+
+    <div id="toast" role="status"></div>
+    <div id="joystick" aria-label="Movement joystick"><div id="stick"></div></div>
+    <div class="right-controls">
+      <button id="runButton" class="control-button">🏃</button>
+      <button id="interactButton" class="control-button">✋</button>
+      <button id="photoButton" class="control-button photo">📸</button>
+    </div>
+    <div id="portraitOverlay"><div class="portrait-title">OUR LITTLE FAMILY ❤️</div><div class="portrait-subtitle">A home full of love</div><button id="exitPortrait">Back to game</button></div>
+    <div id="interactionHint">Move close to a vehicle and tap ✋ to drive. Tap again to get out.</div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
 </body>
 </html>
