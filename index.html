@@ -210,9 +210,65 @@ ball(-.9,.15,.1,.8,0xffffff,g);
 g.position.set(x,y,z);
 }
 
-// UPGRADED MOUNTAINS
+// SNOW-COVERED MOUNTAIN RANGE
 function makeMountains(){
 
+  const rockColors = [
+    0x718b9b,
+    0x829eaa,
+    0x647f91,
+    0x91a8b2
+  ];
+
+  // Distant mountain peaks
+  for(let i=0;i<19;i++){
+
+    const x=(i-9)*10;
+    const height=17+Math.random()*13;
+    const width=8+Math.random()*4;
+    const z=-65-Math.random()*8;
+
+    const mountain=mesh(
+      new THREE.ConeGeometry(width,height,7),
+      material(rockColors[i%4]),
+      x,height/2-1,z
+    );
+
+    mountain.rotation.y=Math.random()*.4;
+
+    // Snow cap
+    const snowHeight=height*.38;
+
+    const snow=mesh(
+      new THREE.ConeGeometry(width*.34,snowHeight,7),
+      material(0xf7fbff),
+      x,height-snowHeight*.35-1,z
+    );
+
+    snow.rotation.y=mountain.rotation.y;
+  }
+
+  // Layered green foothills
+  for(let i=0;i<15;i++){
+
+    const x=(i-7)*11;
+
+    mesh(
+      new THREE.SphereGeometry(1,16,12),
+      material(i%2?0x557e68:0x73977b),
+      x,2,-43
+    ).scale.set(8,5+Math.random()*3,6);
+  }
+
+  // Distant clouds
+  for(let i=0;i<12;i++){
+    makeCloud(
+      -55+i*10,
+      25+Math.random()*9,
+      -48
+    );
+  }
+}
 // Distant mountain range
 for(let i=0;i<17;i++){
 let s=10+Math.random()*9;
