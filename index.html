@@ -79,6 +79,7 @@ button{border:0;border-radius:10px;padding:10px;margin:3px;background:#8e69c8;co
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { makePerson } from './js/characters.js';
+import { addWorldDetails } from './js/world.js';
 
 // SCENE
 const scene=new THREE.Scene();
@@ -264,6 +265,7 @@ box(10,.55,z,.15,1.1,.15,0x9c7049,g);
 }
 
 makeFence();
+addWorldDetails(THREE, scene);
 
 // HOUSE
 function buildHouse(tier){
