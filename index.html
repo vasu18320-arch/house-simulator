@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,21 +7,20 @@
 <title>HOUSE SIMULATOR</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;overflow:hidden;font-family:Arial;background:#b9e3f5}
+body{margin:0;overflow:hidden;font-family:Arial;background:#9bd2f2}
 #game{position:fixed;inset:0}
-#ui{position:fixed;inset:0;pointer-events:none;color:#fff}
-header{padding:14px;text-align:center;font-size:23px;font-weight:900;text-shadow:0 2px 5px #333}
-.panel{pointer-events:auto;position:absolute;top:65px;left:10px;width:190px;max-height:65vh;overflow:auto;background:#ffffffed;color:#333;border-radius:17px;padding:12px;box-shadow:0 4px 15px #0003}
-.panel h3{margin:4px 0 9px;color:#6b4b9b}
+#ui{position:fixed;inset:0;pointer-events:none;color:white}
+header{text-align:center;padding:14px;font-size:22px;font-weight:900;text-shadow:0 2px 6px #333}
+.panel{pointer-events:auto;position:absolute;top:65px;left:10px;width:190px;max-height:65vh;overflow:auto;background:#fffffff0;color:#333;border-radius:17px;padding:12px;box-shadow:0 4px 18px #0003}
+.panel h3{margin:9px 0;color:#7953a8}
 button{border:0;border-radius:10px;padding:10px;margin:3px;background:#8e69c8;color:white;font-weight:bold}
-button:active{transform:scale(.96)}
 .panel button{width:100%;text-align:left}
-#status{position:absolute;top:12px;right:10px;background:#ffffffdd;color:#333;border-radius:12px;padding:9px;font-size:12px}
+#status{position:absolute;top:12px;right:10px;background:#ffffffdf;color:#333;border-radius:12px;padding:9px;font-size:11px}
 #joystick{position:absolute;bottom:25px;left:25px;width:110px;height:110px;border-radius:50%;background:#ffffff55;border:2px solid #fff;pointer-events:auto;touch-action:none}
-#stick{position:absolute;width:45px;height:45px;left:31px;top:31px;border-radius:50%;background:#fff9;box-shadow:0 2px 7px #555}
-#portrait{position:absolute;right:15px;bottom:30px;pointer-events:auto}
+#stick{position:absolute;width:45px;height:45px;left:31px;top:31px;border-radius:50%;background:#fff;box-shadow:0 2px 7px #555}
+#portrait{position:absolute;right:15px;bottom:30px;pointer-events:auto;background:#e78da8}
 #message{position:absolute;bottom:155px;left:50%;transform:translateX(-50%);background:#222b;padding:8px 14px;border-radius:15px;font-size:12px;white-space:nowrap}
-#hide{position:absolute;right:10px;top:60px}
+#hide{position:absolute;right:10px;top:60px;pointer-events:auto}
 </style>
 </head>
 <body>
@@ -59,155 +59,362 @@ button:active{transform:scale(.96)}
 <button onclick="addBaby('Baby girl')">🎀 Add baby girl</button>
 <button onclick="addBaby('Baby boy')">🧸 Add baby boy</button>
 <div id="family"></div>
-<button onclick="makePortrait()" style="background:#e68a9c">❤️ Family portrait</button>
+<button onclick="makePortrait()" style="background:#e78da8">❤️ Family portrait</button>
 </div>
-<div id="message">Drag to look around · Use joystick to move</div>
+<div id="message">Move with joystick · Drag screen to look around</div>
 <div id="joystick"><div id="stick"></div></div>
 <button id="portrait" onclick="makePortrait()">📸 Family photo</button>
 </div>
+
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x9bd2f2);
-scene.fog=new THREE.Fog(0x9bd2f2,35,100);
-const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,200);
-camera.position.set(0,7,14);
+scene.background=new THREE.Color(0x91cbed);
+scene.fog=new THREE.Fog(0x91cbed,45,125);
+
+const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,250);
+camera.position.set(0,8,16);
+
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
 renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
 document.getElementById('game').appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xffffff,0x637b55,2));
-const sun=new THREE.DirectionalLight(0xffffff,2);
-sun.position.set(-10,20,10);sun.castShadow=true;scene.add(sun);
 
-const mat=(color)=>new THREE.MeshStandardMaterial({color,roughness:.85});
-const green=mat(0x6baf68),brown=mat(0x81543b),white=mat(0xffffff);
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),green);
-ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+scene.add(new THREE.HemisphereLight(0xd9efff,0x637a45,2));
+const sun=new THREE.DirectionalLight(0xfff2d4,3);
+sun.position.set(-20,30,15);
+sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024);
+sun.shadow.camera.left=-35;
+sun.shadow.camera.right=35;
+sun.shadow.camera.top=35;
+sun.shadow.camera.bottom=-35;
+scene.add(sun);
 
-function box(x,y,z,sx,sy,sz,color){
-const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));
-o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;scene.add(o);return o;
+const material=(c,r=.85)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
+const mats={
+grass:material(0x6eae60),
+darkgrass:material(0x478b50),
+wood:material(0x805033),
+cream:material(0xf1dfbd),
+white:material(0xfff4df),
+glass:material(0x8bd1ed,.25),
+leaf:material(0x39824c),
+leaf2:material(0x5da85b),
+roof:material(0x984c38),
+skin:material(0xc98d6b),
+black:material(0x28201d),
+};
+
+function mesh(geo,mat,x,y,z,parent=scene){
+const o=new THREE.Mesh(geo,mat);
+o.position.set(x,y,z);
+o.castShadow=true;
+o.receiveShadow=true;
+parent.add(o);
+return o;
 }
-function sphere(x,y,z,r,color){
-const o=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),mat(color));
-o.position.set(x,y,z);o.castShadow=true;scene.add(o);return o;
+function box(x,y,z,sx,sy,sz,c,parent=scene){
+return mesh(new THREE.BoxGeometry(sx,sy,sz),material(c),x,y,z,parent);
 }
-function tree(x,z){
-const trunk=box(x,1,z,.35,2,.35,0x79502f);
-sphere(x,2.6,z,1.25,0x347c48);
-sphere(x-.55,2.3,z, .75,0x438c4c);
+function ball(x,y,z,s,c,parent=scene){
+return mesh(new THREE.SphereGeometry(s,20,16),material(c),x,y,z,parent);
 }
-for(let i=0;i<35;i++){
+function cylinder(x,y,z,r1,r2,h,c,parent=scene){
+return mesh(new THREE.CylinderGeometry(r1,r2,h,12),material(c),x,y,z,parent);
+}
+
+const ground=mesh(new THREE.PlaneGeometry(220,220),mats.grass,0,-.1,0);
+ground.rotation.x=-Math.PI/2;
+
+let scenery=[],houseParts=[],pets=[],vehicles=[],babies=[];
+function keep(o,arr){arr.push(o);return o}
+function groupKeep(arr){
+const g=new THREE.Group();
+scene.add(g);arr.push(g);return g;
+}
+function clear(arr){
+arr.forEach(o=>scene.remove(o));arr.length=0;
+}
+
+function makeTree(x,z,size=1){
+const g=groupKeep(scenery);
+cylinder(0,size,0,.22*size,.3*size,2*size,0x79502f,g);
+ball(0,2.3*size,0,1.1*size,0x39824c,g);
+ball(-.55*size,2*size,.1,.75*size,0x5da85b,g);
+ball(.55*size,2.1*size,.15,.8*size,0x478d4b,g);
+ball(0,2.7*size,.2,.7*size,0x66aa5c,g);
+g.position.set(x,0,z);
+}
+function makeFlower(x,z){
+const g=groupKeep(scenery);
+cylinder(0,.16,0,.025,.025,.3,0x358b40,g);
+for(let i=0;i<5;i++){
+let a=i*Math.PI*2/5;
+ball(Math.cos(a)*.12,.34,Math.sin(a)*.12,.09,[0xf5a5ba,0xffd45e,0xffffff][i%3],g);
+}
+ball(0,.34,0,.07,0xe9a52c,g);
+g.position.set(x,0,z);
+}
+function makeCloud(x,y,z){
+const g=groupKeep(scenery);
+ball(0,0,0,1.2,0xffffff,g);
+ball(1,.2,0,.85,0xffffff,g);
+ball(-.9,.15,.1,.8,0xffffff,g);
+g.position.set(x,y,z);
+}
+
+function makeMountains(){
+for(let i=0;i<13;i++){
+let s=9+Math.random()*9;
+let m=mesh(new THREE.ConeGeometry(s,s*1.7,5),material(0x829fa9), (i-6)*12,s*.75,-52-Math.random()*15);
+m.rotation.y=Math.random();
+}
+for(let i=0;i<6;i++)makeCloud(-35+i*14,24+Math.random()*7,-45);
+}
+makeMountains();
+
+for(let i=0;i<55;i++){
 let x=(Math.random()-.5)*65,z=(Math.random()-.5)*65;
-if(Math.abs(x)>8||Math.abs(z)>8)tree(x,z);
+if(Math.abs(x)>8||Math.abs(z)>9)makeTree(x,z,.7+Math.random()*.6);
 }
-function mountain(x,z,s){
-const m=new THREE.Mesh(new THREE.ConeGeometry(s, s*1.5,5),mat(0x829caa));
-m.position.set(x,s*.65,z);scene.add(m);
-}
-for(let i=0;i<12;i++)mountain((i-6)*10,-35-Math.random()*15,8+Math.random()*8);
+for(let i=0;i<45;i++)makeFlower((Math.random()-.5)*30,(Math.random()-.5)*28);
 
-let houseParts=[],people=[],pets=[],vehicles=[],babies=[];
-function clearGroup(arr){arr.forEach(o=>scene.remove(o));arr.length=0}
+function makeFence(){
+const g=groupKeep(scenery);
+for(let x=-10;x<=10;x+=2){
+box(x,.55,-11,.15,1.1,.15,0x9c7049,g);
+box(x,.55,9,.15,1.1,.15,0x9c7049,g);
+}
+box(0,.85,-11,21,.15,.15,0xb88a5c,g);
+box(0,.35,-11,21,.15,.15,0xb88a5c,g);
+box(0,.85,9,21,.15,.15,0xb88a5c,g);
+box(0,.35,9,21,.15,.15,0xb88a5c,g);
+for(let z=-11;z<=9;z+=2){
+box(-10,.55,z,.15,1.1,.15,0x9c7049,g);
+box(10,.55,z,.15,1.1,.15,0x9c7049,g);
+}
+}
+makeFence();
+
 function buildHouse(tier){
-clearGroup(houseParts);
-const add=o=>houseParts.push(o);
-let width=[5,7,10][tier],height=[2.8,3.5,4.5][tier];
-add(box(0,height/2,-5,width,height,width*.7,[0xe4c5a2,0xf0dfc3,0xffffff][tier]));
-let roof=new THREE.Mesh(new THREE.ConeGeometry(width*.85,2.2,4),mat([0x914d37,0x6b4141,0x384d63][tier]));
-roof.position.set(0,height+1,-5);roof.rotation.y=Math.PI/4;scene.add(roof);add(roof);
-add(box(0,1.1,-1.4,1.1,2.2,.15,0x70442e));
-for(let x of [-width*.28,width*.28])add(box(x,1.9,-1.38,1.1,1,.15,0x83c8e8));
+clear(houseParts);
+const g=groupKeep(houseParts);
+let w=[5.5,7.5,10][tier];
+let h=[3.1,3.8,4.5][tier];
+let depth=[4.5,5.5,7][tier];
+let wall=[0xe8cba4,0xf0e5d1,0xfff5e7][tier];
+let roof=[0x9b513a,0x75453e,0x344f61][tier];
+
+box(0,h/2,-3,w,h,depth,wall,g);
+box(0,.12,-3,w+.5,.25,depth+.5,0x98765c,g);
+
+// Sloping roof panels
+let left=box(-w*.25,h+.65,-3,w*.72,.22,depth+.9,roof,g);
+left.rotation.z=-.48;
+let right=box(w*.25,h+.65,-3,w*.72,.22,depth+.9,roof,g);
+right.rotation.z=.48;
+box(0,h+1.15,-3,.22,.25,depth+.95,0x71463b,g);
+
+// Door and windows
+box(0,1.15,-.72,1.15,2.3,.15,0x70462e,g);
+ball( .38,1.1,-.61,.07,0xf5cb6d,g);
+for(let x of [-w*.3,w*.3]){
+box(x,2,-.69,1.25,1.1,.12,0x75bde0,g);
+box(x,2,.01,1.38,.09,.08,0xffffff,g);
+box(x,2,.0,.08,1.2,.08,0xffffff,g);
+}
+
+// Porch and columns
 if(tier>0){
-add(box(0,height+.1,-5,width*.55,.2,width*.6,0x8e6344));
+box(0,2.35,.2,w*.85,.2,1.8,0x9c7049,g);
+for(let x of [-w*.37,w*.37]){
+cylinder(x,1.25,.75,.09,.09,2.3,0xf3e4c9,g);
 }
 }
-function person(x,z,isGirl=false){
-let group=new THREE.Group();
-let skin=mat(0xc98f6c),hair=mat(isGirl?0x17121c:0x28201b);
-let clothes=mat(isGirl?0xe88db4:0x4c86c9);
-function part(geo,material,x,y,z){let o=new THREE.Mesh(geo,material);o.position.set(x,y,z);o.castShadow=true;group.add(o);return o}
-part(new THREE.CapsuleGeometry(.38,.85,4,8),clothes,0,1.05,0);
-part(new THREE.SphereGeometry(.42,20,16),skin,0,2,0);
-part(new THREE.SphereGeometry(.44,16,12),hair,0,2.22,-.1);
-if(isGirl)part(new THREE.SphereGeometry(.2,12,10),hair,-.35,1.95,0);
-for(let x of [-.15,.15])part(new THREE.SphereGeometry(.045,10,8),mat(0x21150f),x,2.03,.37);
-part(new THREE.SphereGeometry(.08,12,10),skin,0,1.88,.38);
-group.position.set(x,0,z);scene.add(group);return group;
+if(tier===2){
+box(0,h+2.5,-3,3,.15,depth*.8,0x8a6849,g);
 }
-const vasu=person(-1,2,false),shelly=person(1,2,true);
-people.push(vasu,shelly);
+}
+
+// Characters
+function makePerson(isGirl=false){
+const g=new THREE.Group();
+const skin=material(0xc98b68);
+const hair=material(isGirl?0x15101b:0x241b17);
+const clothes=material(isGirl?0xe88db4:0x4b83c8);
+function p(geo,m,x,y,z){
+return mesh(geo,m,x,y,z,g);
+}
+p(new THREE.CapsuleGeometry(.38,.8,5,12),clothes,0,1.05,0);
+p(new THREE.SphereGeometry(.43,24,20),skin,0,2,0);
+p(new THREE.SphereGeometry(.45,20,16),hair,0,2.27,-.12);
+if(isGirl){
+p(new THREE.SphereGeometry(.28,16,12),hair,-.38,1.98,-.05);
+p(new THREE.SphereGeometry(.28,16,12),hair,.38,1.98,-.05);
+}
+for(let x of [-.16,.16]){
+p(new THREE.SphereGeometry(.055,12,10),material(0xffffff),x,2.04,.385);
+p(new THREE.SphereGeometry(.027,12,10),material(0x241714),x,2.04,.433);
+}
+p(new THREE.SphereGeometry(.075,12,10),skin,0,1.91,.4);
+
+// Arms
+for(let x of [-.48,.48]){
+let arm=p(new THREE.CapsuleGeometry(.12,.58,4,8),clothes,x,1.15,0);
+arm.rotation.z=x<0?-.35:.35;
+p(new THREE.SphereGeometry(.13,12,10),skin,x*1.2,.79,.02);
+}
+// Legs
+for(let x of [-.19,.19]){
+p(new THREE.CapsuleGeometry(.14,.45,4,8),material(0x39435c),x,.28,0);
+p(new THREE.BoxGeometry(.3,.14,.48),material(0x342a27),x,.06,.12);
+}
+scene.add(g);
+return g;
+}
+
+const vasu=makePerson(false);
+const shelly=makePerson(true);
+vasu.position.set(-1,0,2);
+shelly.position.set(1,0,2);
+
 buildHouse(0);
-let world='Mountain',tier=0;
-window.setWorld=(w)=>{
-world=w;
-scene.background=new THREE.Color(w==='Mountain'?0x9bd2f2:w==='City'?0xb7c7d8:0xb4dca1);
-ground.material=mat(w==='City'?0x858b8c:w==='Mountain'?0x6baf68:0x7fba69);
-document.getElementById('status').textContent=w+' world selected';
+
+function makeAnimal(name){
+const g=new THREE.Group();
+let c=name==='Cow'?0xf0eee5:name==='Cat'?0x777777:name==='Dog'?0xa66b3e:name==='Parrot'?0x31a85d:0xc9a16d;
+const fur=material(c);
+mesh(new THREE.SphereGeometry(.5,20,16),fur,0,.55,0,g).scale.set(1.3,.85,.8);
+mesh(new THREE.SphereGeometry(.3,18,14),fur,.52,.9,0,g);
+for(let x of [-.15,.15]){
+mesh(new THREE.SphereGeometry(.045,10,8),material(0x201815),.62, .94,x+.05,g);
+}
+if(name==='Cat'||name==='Parrot'){
+for(let x of [-.17,.17]){
+let ear=mesh(new THREE.ConeGeometry(.13,.35,8),fur,.42,.? ,0,g);
+}
+}
+for(let x of [-.3,.3])for(let z of [-.23,.23]){
+mesh(new THREE.CylinderGeometry(.07,.09,.45,10),fur,x,.22,z,g);
+}
+g.userData.name=name;
+scene.add(g);
+return g;
+}
+window.addPet=(name)=>{
+let g=makeAnimal(name);
+g.position.set(-5+pets.length*1.5,0,5);
+pets.push(g);
+status(name+' added!');
 };
-window.setHouse=(t)=>{tier=t;buildHouse(t);document.getElementById('status').textContent=['Simple house','Moderate house','Grand farmhouse'][t]+' selected'};
-window.outfit=(t)=>{
-vasu.children[0].material=mat([0x4c86c9,0x9a533c,0x3a345d][t]);
-shelly.children[0].material=mat([0xe88db4,0xf2a64b,0x9a69c8][t]);
+
+function makeVehicle(name){
+const g=new THREE.Group();
+let color=name==='SUV'?0x294d7b:name==='Bike'?0xb72f35:name==='Tractor'?0x3d9d48:0xd4a13a;
+let body=mesh(new THREE.BoxGeometry(name==='Bicycle'?1.8:2.7,.75,1.25),material(color),0,.85,0,g);
+if(name!=='Bicycle'&&name!=='Bike'){
+mesh(new THREE.BoxGeometry(1.35,.7,1.05),material(0x91cce0,.25),-.1,1.55,0,g);
+}
+for(let x of [-.9,.9])for(let z of [-.68,.68]){
+let wheel=mesh(new THREE.CylinderGeometry(.34,.34,.2,20),material(0x202020),x,.35,z,g);
+wheel.rotation.z=Math.PI/2;
+}
+scene.add(g);return g;
+}
+window.addVehicle=(name)=>{
+let g=makeVehicle(name);
+g.position.set(5+vehicles.length*3,0,5);
+vehicles.push(g);status(name+' added!');
 };
-function animal(name,x,z){
-let g=new THREE.Group(),c=mat(name==='Cow'?0xffffff:name==='Cat'?0x777777:name==='Dog'?0x9b633e:name==='Parrot'?0x26a45a:0xc9a16d);
-let body=new THREE.Mesh(new THREE.SphereGeometry(.55,16,12),c);body.scale.set(1.3,.8,.8);body.position.y=.6;g.add(body);
-let head=new THREE.Mesh(new THREE.SphereGeometry(.3,16,12),c);head.position.set(.5,.95,0);g.add(head);
-g.position.set(x,0,z);scene.add(g);return g;
-}
-window.addPet=(name)=>{pets.push(animal(name,-5+pets.length*1.4,4));document.getElementById('status').textContent=name+' added!'};
-function vehicle(name,x,z){
-let g=new THREE.Group(),color=mat(name==='SUV'?0x263f69:name==='Bike'?0xb82f2f:name==='Tractor'?0x3b9c46:0xd2a53b);
-let body=new THREE.Mesh(new THREE.BoxGeometry(name==='Bicycle'?1.5:2.5,.7,1.2),color);body.position.y=.8;g.add(body);
-if(name!=='Bicycle'){
-let top=new THREE.Mesh(new THREE.BoxGeometry(1.2,.6,1),mat(0x8ac4df));top.position.set(0,1.4,0);g.add(top);
-}
-for(let x of [-.8,.8])for(let z of [-.55,.55]){
-let wheel=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.18,16),mat(0x222222));
-wheel.rotation.z=Math.PI/2;wheel.position.set(x,.35,z);g.add(wheel);
-}
-g.position.set(5+vehicles.length*2,0,4);scene.add(g);return g;
-}
-window.addVehicle=(name)=>{vehicles.push(vehicle(name));document.getElementById('status').textContent=name+' added!'};
+
 window.addBaby=(name)=>{
-let b=person(-1+babies.length*.7,3,true);
-b.scale.setScalar(.55);babies.push(b);
+let b=makePerson(name==='Baby girl');
+b.scale.setScalar(.52);
+b.position.set(-1+babies.length*.8,0,3.5);
+babies.push(b);
 document.getElementById('family').textContent='Babies: '+babies.length;
-document.getElementById('status').textContent=name+' added ❤️';
+status(name+' added ❤️');
+};
+
+window.setHouse=(t)=>{
+buildHouse(t);
+status(['Simple home','Beautiful family home','Grand farmhouse'][t]);
+};
+window.outfit=(t)=>{
+vasu.children[0].material=material([0x4b83c8,0x9b573c,0x34345d][t]);
+shelly.children[0].material=material([0xe88db4,0xf2a64b,0x9a69c8][t]);
+status('Outfits changed!');
+};
+window.setWorld=(w)=>{
+scene.background=new THREE.Color(w==='Mountain'?0x91cbed:w==='City'?0xb6c5d4:0xb5dfa0);
+ground.material=material(w==='City'?0x888d8d:0x6eae60);
+status(w+' world selected!');
+};
+function status(s){document.getElementById('status').textContent=s}
+window.togglePanel=()=>{
+let p=document.getElementById('panel');
+p.style.display=p.style.display==='none'?'block':'none';
 };
 window.makePortrait=()=>{
-camera.position.set(0,7,13);camera.lookAt(0,1,0);
-document.getElementById('status').textContent='❤️ Your family portrait is ready! Take a screenshot.';
+camera.position.set(0,7,15);
+camera.lookAt(0,1,0);
+status('❤️ Family portrait ready! Take a screenshot.');
 };
-window.togglePanel=()=>{let p=document.getElementById('panel');p.style.display=p.style.display==='none'?'block':'none'};
-let moving={x:0,y:0},drag=false,lastX=0,lastY=0,angle=0;
-const joy=document.getElementById('joystick'),stick=document.getElementById('stick');
-joy.addEventListener('pointerdown',e=>{drag=true;joy.setPointerCapture(e.pointerId);moveJoy(e)});
-joy.addEventListener('pointermove',e=>{if(drag)moveJoy(e)});
-joy.addEventListener('pointerup',()=>{drag=false;moving={x:0,y:0};stick.style.transform='translate(0,0)'});
+
+// Joystick movement and camera
+let moving={x:0,y:0};
+let joy=document.getElementById('joystick');
+let stick=document.getElementById('stick');
+let joyActive=false,screenActive=false,lastX=0,angle=0;
+
+joy.addEventListener('pointerdown',e=>{
+joyActive=true;joy.setPointerCapture(e.pointerId);moveJoy(e);
+});
+joy.addEventListener('pointermove',e=>{if(joyActive)moveJoy(e)});
+joy.addEventListener('pointerup',()=>{
+joyActive=false;moving={x:0,y:0};stick.style.transform='translate(0,0)';
+});
 function moveJoy(e){
-let r=joy.getBoundingClientRect(),x=e.clientX-r.left-55,y=e.clientY-r.top-55;
-let d=Math.hypot(x,y),s=Math.min(35,d);if(d){moving={x:x/d*s/35,y:y/d*s/35}}
+let r=joy.getBoundingClientRect();
+let x=e.clientX-r.left-55,y=e.clientY-r.top-55;
+let d=Math.hypot(x,y),s=Math.min(35,d);
+if(d)moving={x:x/d*s/35,y:y/d*s/35};
 stick.style.transform=`translate(${moving.x*35}px,${moving.y*35}px)`;
 }
-renderer.domElement.addEventListener('pointerdown',e=>{if(e.target===renderer.domElement){lastX=e.clientX;lastY=e.clientY;drag=true}});
-renderer.domElement.addEventListener('pointermove',e=>{if(drag&&e.buttons){angle-=(e.clientX-lastX)*.005;lastX=e.clientX;lastY=e.clientY}});
-renderer.domElement.addEventListener('pointerup',()=>drag=false);
+renderer.domElement.addEventListener('pointerdown',e=>{
+screenActive=true;lastX=e.clientX;
+});
+renderer.domElement.addEventListener('pointermove',e=>{
+if(screenActive&&e.buttons)angle-=(e.clientX-lastX)*.005;
+lastX=e.clientX;
+});
+renderer.domElement.addEventListener('pointerup',()=>screenActive=false);
+
 function animate(){
 requestAnimationFrame(animate);
-vasu.position.x+=moving.x*.06;vasu.position.z+=moving.y*.06;
-shelly.position.x=vasu.position.x+1.2;shelly.position.z=vasu.position.z;
-camera.position.x=vasu.position.x+Math.sin(angle)*13;
-camera.position.z=vasu.position.z+Math.cos(angle)*13;
+vasu.position.x+=moving.x*.07;
+vasu.position.z+=moving.y*.07;
+shelly.position.x=vasu.position.x+1.3;
+shelly.position.z=vasu.position.z;
+camera.position.x=vasu.position.x+Math.sin(angle)*15;
+camera.position.z=vasu.position.z+Math.cos(angle)*15;
 camera.lookAt(vasu.position.x,1,vasu.position.z);
 renderer.render(scene,camera);
 }
 animate();
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+
+addEventListener('resize',()=>{
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+});
 </script>
 </body>
 </html>
