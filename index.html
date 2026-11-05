@@ -229,7 +229,50 @@ makeCloud(-35+i*14,24+Math.random()*7,-45);
 }
 }
 
-makeMountains();
+
+function makeMountains(){
+
+// Distant mountain range
+for(let i=0;i<17;i++){
+  let s=10+Math.random()*9;
+  let x=(i-8)*11;
+  let z=-58-Math.random()*12;
+
+  let mountain=mesh(
+    new THREE.ConeGeometry(s,s*1.7,7),
+    material([0x8299a8,0x718c9b,0x91a6b0][i%3]),
+    x,s*.75,z
+  );
+
+  mountain.rotation.y=Math.random()*.5;
+
+  // Snow-covered mountain peak
+  let snow=mesh(
+    new THREE.ConeGeometry(s*.27,s*.43,7),
+    material(0xf1f3f1),
+    x,s*1.42,z
+  );
+
+  snow.rotation.y=mountain.rotation.y;
+}
+
+// Closer forested hills
+for(let i=0;i<11;i++){
+  let s=7+Math.random()*5;
+  let x=(i-5)*15;
+
+  mesh(
+    new THREE.ConeGeometry(s,s*1.25,8),
+    material(i%2?0x638b80:0x73988b),
+    x,s*.55,-37-Math.random()*7
+  );
+}
+
+// Soft clouds
+for(let i=0;i<9;i++){
+  makeCloud(-48+i*12,23+Math.random()*8,-43);
+}
+}
 
 for(let i=0;i<55;i++){
 let x=(Math.random()-.5)*65;
