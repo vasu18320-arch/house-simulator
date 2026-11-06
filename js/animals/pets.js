@@ -1,20 +1,8 @@
-export function createPet(THREE,name){
- const g=new THREE.Group(),mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.85});
- const colors={Cat:0x777777,Dog:0xa66b3e,Cow:0xf0eee5,Parrot:0x31a85d,Hamster:0xc9a16d};
- const fur=mat(colors[name]||0x999999),dark=mat(0x211b19),white=mat(0xffffff),pink=mat(0xe99aab);
- function ball(x,y,z,sx,sy,sz,m){const o=new THREE.Mesh(new THREE.SphereGeometry(1,18,14),m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;g.add(o);return o}
- if(name==='Parrot'){
-  ball(0,.9,0,.38,.55,.3,fur);ball(0,1.42,.02,.25,.25,.24,fur);ball(0,1.42,.24,.12,.08,.1,mat(0xffbd45));
-  ball(-.23,.9,.02,.22,.45,.08,mat(0xf0c83c));ball(.23,.9,.02,.22,.45,.08,mat(0x2f83c7));
-  const perch=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,1.1,8),mat(0x805333));perch.rotation.z=Math.PI/2;perch.position.y=.2;g.add(perch);
- }else{
-  const scale=name==='Cow'?1.45:name==='Hamster'?.55:1;
-  ball(0,.55,0,.55*scale,.42*scale,.38*scale,fur);ball(.48*scale,.82*scale,.02,.3*scale,.3*scale,.28*scale,fur);
-  for(const x of [-.16,.16]){ball(.57*scale+x*.35,.87*scale,.25*scale,.055*scale,.07*scale,.035*scale,dark);ball(.57*scale+x*.35,.89*scale,.28*scale,.02,.025,.012,white)}
-  if(name==='Cat'||name==='Hamster'){for(const x of [-.16,.16]){const ear=new THREE.Mesh(new THREE.ConeGeometry(.12*scale,.32*scale,8),fur);ear.position.set(.4*scale+x,.1+1.05*scale,.02);g.add(ear)}}
-  if(name==='Cow'){ball(-.2,1.0,-.1,.18,.28,.12,white);ball(.12,.72,.35,.12,.16,.04,dark);for(const x of [-.3,.3]){const horn=new THREE.Mesh(new THREE.ConeGeometry(.08,.28,8),mat(0xe9d8a7));horn.position.set(.48*scale+x,.95*scale,0);g.add(horn)}}
-  for(const x of [-.3,.3])for(const z of [-.2,.2]){const leg=new THREE.Mesh(new THREE.CylinderGeometry(.07*scale,.09*scale,.42*scale,8),fur);leg.position.set(x*scale,.22*scale,z*scale);g.add(leg)}
-  if(name==='Dog'){ball(-.55,.65,-.1,.2,.13,.17,fur);ball(.65,.65,-.02,.12,.12,.12,pink)}
- }
- g.userData.kind=name;return g;
+export function createPet(T,name){
+ const g=new T.Group(),M=c=>new T.MeshStandardMaterial({color:c,roughness:.8}),fur=M(({Cat:0x8a8585,Dog:0xb87943,Cow:0xf2eee4,Parrot:0x28a85a,Hamster:0xc99a62})[name]||0x999999),dark=M(0x241c1a),white=M(0xffffff),pink=M(0xe99aaa);
+ function ball(x,y,z,a,b,c,m){const o=new T.Mesh(new T.SphereGeometry(1,22,16),m);o.position.set(x,y,z);o.scale.set(a,b,c);o.castShadow=true;g.add(o);return o}
+ function limb(x,y,z,r,h){const o=new T.Mesh(new T.CapsuleGeometry(r,h,4,10),fur);o.position.set(x,y,z);g.add(o)}
+ if(name==='Parrot'){ball(0,.9,0,.34,.52,.29,fur);ball(0,1.45,.02,.25,.25,.23,fur);ball(-.23,.9,.02,.18,.43,.07,M(0xf0c83c));ball(.23,.9,.02,.18,.43,.07,M(0x3285d0));const beak=new T.Mesh(new T.ConeGeometry(.12,.27,8),M(0xffbd45));beak.position.set(0,1.39,.29);beak.rotation.x=Math.PI/2;g.add(beak);for(const x of [-.11,.11])ball(x,1.48,.22,.045,.05,.025,white)}
+ else{const s=name==='Cow'?1.38:name==='Hamster'?.58:1;ball(-.05,.57,0,.56*s,.38*s,.37*s,fur);ball(.43*s,.82*s,.04,.29*s,.29*s,.27*s,fur);if(name==='Cow'){ball(.44,.66,.28,.22,.15,.12,pink);for(const x of [-.2,.2]){ball(.42+x,.99,0,.11,.12,.11,white);const horn=new T.Mesh(new T.ConeGeometry(.07,.28,8),M(0xe5d6b6));horn.position.set(.43+x,1.13,0);g.add(horn)}ball(-.18,.72,.35,.14,.2,.05,dark)}if(name==='Cat'||name==='Hamster'){for(const x of [-.17,.17]){const ear=new T.Mesh(new T.ConeGeometry(.12*s,.3*s,10),fur);ear.position.set(.43*s+x,.98*s,.02);g.add(ear);ball(.43*s+x,.84*s,.28*s,.045*s,.055*s,.025*s,white)}}if(name==='Dog'){ball(.27*s,.94*s,-.18*s,.13*s,.3*s,.12*s,fur);ball(.59*s,.64*s,.24*s,.14*s,.11*s,.1*s,pink);ball(-.58*s,.66*s,-.05*s,.22*s,.11*s,.12*s,fur)}for(const x of [-.34,.34])for(const z of [-.2,.2])limb(x*s,.24*s,z*s,.075*s,.3*s);if(name==='Cat'){const tail=new T.Mesh(new T.TorusGeometry(.22,.055,8,16,Math.PI),fur);tail.position.set(-.55,.75,-.05);g.add(tail)}}
+ g.userData.kind=name;g.userData.phase=Math.random()*6.28;g.userData.animate=t=>{g.position.y=Math.abs(Math.sin(t*2+g.userData.phase))*.035;g.rotation.y=Math.sin(t*.8+g.userData.phase)*.16};return g;
 }
