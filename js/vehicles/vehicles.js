@@ -117,24 +117,45 @@ export function createVehicle(T,name){
  root.userData.kind=name;return root;
 }
 export function createVehicleShed(T){
- const g=new T.Group(),wood=new T.MeshStandardMaterial({color:0x79543a,roughness:.86}),stone=new T.MeshStandardMaterial({color:0xb5ad9c,roughness:1}),roof=new T.MeshStandardMaterial({color:0x455d68,roughness:.75}),dark=new T.MeshStandardMaterial({color:0x343b3e,roughness:.9}),lamp=new T.MeshStandardMaterial({color:0xffe2a0,emissive:0x8d652b,emissiveIntensity:.35});
- const box=(x,y,z,a,b,c,m)=>{const o=new T.Mesh(new T.BoxGeometry(a,b,c),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;g.add(o);return o};
- const post=(x,z)=>box(x,2.1,z,.28,4.2,.28,wood);
- // Spacious three-bay open-front garage, sized for all six vehicle types.
- box(0,.12,0,18,.24,12,stone);box(0,.26,0,17.6,.08,11.6,dark);
- for(const x of [-8.4,-2.8,2.8,8.4]){post(x,-5.5);post(x,5.5)}
- box(0,4.18,-5.5,17.2,.3,.3,wood);box(0,4.18,5.5,17.2,.3,.3,wood);
- box(-8.4,2.1,0,.28,4.2,11,wood);box(8.4,2.1,0,.28,4.2,11,wood);
- // simple pitched roof made from two clean planes
- const a=box(-4.3,4.65,0,9.2,.24,12.1,roof);a.rotation.z=-.12;
- const b=box(4.3,4.65,0,9.2,.24,12.1,roof);b.rotation.z=.12;
- box(0,4.98,0,.25,.28,12.2,wood);
- for(const x of [-5.6,0,5.6]){
-  box(x,3.72,-5.32,1.2,.12,.08,wood);
-  const l=new T.Mesh(new T.BoxGeometry(.45,.12,.18),lamp);l.position.set(x,3.55,-5.2);g.add(l);
+ const g=new T.Group();
+ const mat=(c,r=.82)=>new T.MeshStandardMaterial({color:c,roughness:r});
+ const plaster=mat(0xe7e1d3),sage=mat(0x87988a),wood=mat(0x94765b),roof=mat(0x647d78),stone=mat(0xc8c1b2),dark=mat(0x58615d),glass=mat(0xb7d0cb,.35),gold=mat(0xc5a875,.35);
+ const box=(x,y,z,w,h,d,m)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;g.add(o);return o};
+ const cyl=(x,y,z,r,h,m)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,h,24),m);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o};
+ // A calm, courtyard-style carriage house: pale limewash, sage trim and a tiled green roof.
+ box(0,.16,0,19,.32,13,stone);box(0,.34,0,18.7,.08,12.7,plaster);
+ // Rear wall and low side wings make it feel like a designed outbuilding, not a warehouse.
+ box(0,2.25,5.95,18.2,4.25,.35,plaster);
+ box(-8.95,1.9,0,.35,3.6,12,sage);box(8.95,1.9,0,.35,3.6,12,sage);
+ // Four elegant timber piers at the open front and two at the back.
+ for(const x of [-8.7,-3.0,3.0,8.7]){
+  box(x,2.2,-5.95,.34,4.4,.34,wood);
+  box(x,4.35,-5.95,.62,.22,.62,gold);
  }
- // rear wall with tidy tool shelves and bay markings
- box(0,2.05,5.45,16.5,4.0,.22,wood);
- for(const x of [-5.6,0,5.6]){box(x,1.9,4.9,3.8,.06,.06,stone);box(x,2.5,4.9,3.8,.06,.06,stone)}
+ for(const x of [-8.7,8.7])box(x,2.2,5.7,.34,4.4,.34,wood);
+ // Pitched roof planes with broad eaves and fascia.
+ const left=box(-4.65,4.65,0,9.9,.3,13.4,roof);left.rotation.z=-.16;
+ const right=box(4.65,4.65,0,9.9,.3,13.4,roof);right.rotation.z=.16;
+ box(0,5.02,0,.3,.34,13.5,wood);
+ box(0,4.38,-5.94,18.1,.24,.28,wood);box(0,4.38,5.94,18.1,.24,.28,wood);
+ // Rear wall gets a row of high clerestory windows and warm lanterns.
+ for(const x of [-5.8,0,5.8]){
+  box(x,3.1,5.75,2.3,1.0,.08,wood);box(x,3.1,5.68,2.05,.76,.05,glass);
+  box(x,3.1,5.63,.06,.78,.04,gold);box(x,3.1,5.63,2.05,.06,.04,gold);
+ }
+ for(const x of [-6,0,6]){
+  box(x,3.85,-5.72,.28,.55,.22,wood);
+  const l=box(x,3.55,-5.58,.28,.38,.18,gold);
+ }
+ // Discreet sage bay dividers and stone wheel stops keep each vehicle neatly parked.
+ for(const x of [-5.9,0,5.9]){
+  box(x,.09,-.2,.09,.18,10.5,sage);
+  box(x,.12,3.6,4.1,.18,.24,stone);
+ }
+ // Side planting troughs soften the structure.
+ for(const x of [-8.35,8.35]){
+  box(x,.42,2.8,.65,.72,2.0,wood);
+  for(let i=0;i<4;i++){const leaf=cyl(x+(i-1.5)*.13,.95,2.8,.18,.55,sage);leaf.scale.set(.8,1.25,.8)}
+ }
  return g;
 }
