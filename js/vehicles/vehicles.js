@@ -142,8 +142,8 @@ export function createVehicleShed(T){
   for(const s of [-1,1]){box(x+s*2.48,2.65,-6.0,.14,.5,.16,gold)}
  }
  // Continuous hipped roof with fascia, ridge and broad overhang.
- const left=box(-4.65,4.78,0,9.9,.28,13.9,roof);left.rotation.z=-.13;
- const right=box(4.65,4.78,0,9.9,.28,13.9,roof);right.rotation.z=.13;
+ const left=box(-4.65,4.78,0,9.9,.28,13.9,roof);left.rotation.z=.13;
+ const right=box(4.65,4.78,0,9.9,.28,13.9,roof);right.rotation.z=-.13;
  box(0,5.08,0,.24,.28,14.0,wood);
  box(0,4.48,-6.42,18.4,.22,.32,wood);
  box(0,4.48,6.42,18.4,.22,.32,wood);
