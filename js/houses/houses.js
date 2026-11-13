@@ -77,7 +77,61 @@ export function createHouse(T,world,tier){
   box(x,2.8,front+.19,.18,.52,.16,wood);
   box(x,3.0,front+.19,.28,.16,.24,gold);
  }
- for(let i=0;i<7;i++)box(0,.09,front+2.5+i*.92,1.55,.16,.72,stone);
+ // Anniversary approach: paired stepping stones frame a large rangoli without covering it.
+ for(let i=0;i<7;i++)for(const side of [-1,1])box(side*1.72,.09,front+2.5+i*.92,1.05,.14,.68,stone);
+ // Hand-crafted, richly coloured HAPPY ANNIVERSARY rangoli on the forecourt.
+ const rangoliZ=front+5.15;
+ const rangoliMat=(color)=>new T.MeshStandardMaterial({color,roughness:.72,metalness:.04,side:T.DoubleSide});
+ const rangoliColors={
+  deep:rangoliMat(0x173d43),teal:rangoliMat(0x168b83),mint:rangoliMat(0x8bc9ae),
+  saffron:rangoliMat(0xf2a33a),gold:rangoliMat(0xffd66e),coral:rangoliMat(0xe66b69),
+  rose:rangoliMat(0xeaa0b2),cream:rangoliMat(0xfff2d5),violet:rangoliMat(0x9275b5)
+ };
+ const flatDisk=(x,z,r,m,y=.035)=>add(new T.CircleGeometry(r,64),m,x,y,z,-Math.PI/2);
+ const flatRing=(x,z,r,t,m,y=.045)=>{const o=add(new T.TorusGeometry(r,t,10,96),m,x,y,z);o.rotation.x=Math.PI/2;return o};
+ const petal=(x,z,angle,len,w,m,y=.065)=>{
+  const o=add(new T.SphereGeometry(1,20,14),m,x,y,z);
+  o.scale.set(w,.035,len);o.rotation.y=angle;
+  return o;
+ };
+ // Layered circular base and concentric ornamental borders.
+ flatDisk(0,rangoliZ,1.72,rangoliColors.deep,.025);
+ flatRing(0,rangoliZ,1.62,.055,rangoliColors.gold,.055);
+ flatRing(0,rangoliZ,1.48,.025,rangoliColors.cream,.06);
+ flatRing(0,rangoliZ,1.05,.045,rangoliColors.coral,.065);
+ flatRing(0,rangoliZ,.63,.035,rangoliColors.mint,.07);
+ // Twelve large petals, alternating festive shades, with fine inner petal details.
+ for(let i=0;i<12;i++){
+  const a=i*Math.PI/6;
+  petal(Math.sin(a)*1.25,rangoliZ+Math.cos(a)*1.25,a,.48,.23,i%3===0?rangoliColors.saffron:i%3===1?rangoliColors.rose:rangoliColors.teal,.075);
+  petal(Math.sin(a)*.91,rangoliZ+Math.cos(a)*.91,a,.28,.105,rangoliColors.cream,.105);
+  const dx=Math.sin(a)*1.53,dz=rangoliZ+Math.cos(a)*1.53;
+  flatDisk(dx,dz,.055,rangoliColors.gold,.105);
+ }
+ // Eight-point star flower in the centre.
+ for(let i=0;i<8;i++){
+  const a=i*Math.PI/4;
+  petal(Math.sin(a)*.39,rangoliZ+Math.cos(a)*.39,a,.36,.14,i%2?rangoliColors.coral:rangoliColors.saffron,.12);
+ }
+ flatDisk(0,rangoliZ,.22,rangoliColors.cream,.14);
+ flatDisk(0,rangoliZ,.12,rangoliColors.violet,.16);
+ // Tiny decorative dots make the border feel like hand-laid rangoli powder.
+ for(let ring=0;ring<2;ring++)for(let i=0;i<24;i++){
+  const a=i*Math.PI/12,rad=ring?1.38:1.12;
+  flatDisk(Math.sin(a)*rad,rangoliZ+Math.cos(a)*rad,.035,ring?rangoliColors.cream:rangoliColors.gold,.105);
+ }
+ // A small, flat festive plaque with the requested greeting, facing the front approach.
+ const labelCanvas=document.createElement('canvas');labelCanvas.width=1024;labelCanvas.height=192;
+ const ctx=labelCanvas.getContext('2d');
+ const grad=ctx.createLinearGradient(0,0,1024,0);grad.addColorStop(0,'#164c4b');grad.addColorStop(.5,'#287f72');grad.addColorStop(1,'#164c4b');
+ ctx.fillStyle=grad;ctx.fillRect(0,0,1024,192);
+ ctx.strokeStyle='#f7d98a';ctx.lineWidth=9;ctx.strokeRect(12,12,1000,168);
+ ctx.fillStyle='#fff4d8';ctx.font='bold 76px Georgia';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('HAPPY ANNIVERSARY',512,98);
+ const labelTexture=new T.CanvasTexture(labelCanvas);labelTexture.colorSpace=T.SRGBColorSpace;
+ const labelMat=new T.MeshBasicMaterial({map:labelTexture,transparent:false,side:T.DoubleSide});
+ const label=add(new T.PlaneGeometry(2.55,.48),labelMat,0,.075,rangoliZ+2.05);
+ label.rotation.x=-Math.PI/2;
+
  if(tier===1){
   // Upper family suite, balanced dormers and a sunroom wing.
   gradientBox(0,H+1.25,cz,W*.68,2.15,D*.62,p.base,p.top);
