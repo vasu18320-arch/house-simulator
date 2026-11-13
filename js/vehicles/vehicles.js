@@ -11,12 +11,20 @@ export function createVehicle(T,name){
  const tube=(p,a,b,r,m)=>{const A=new T.Vector3(...a),B=new T.Vector3(...b),d=B.clone().sub(A),o=mesh(p,new T.CylinderGeometry(r,r,d.length(),12),m);o.position.copy(A.add(B).multiplyScalar(.5));o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());return o};
  function wheel(x,z,r=.43,width=.28){
   const w=new T.Group();w.position.set(x,r,z);root.add(w);
-  const tyre=mesh(w,new T.CylinderGeometry(r,r,width,36),rubber);tyre.rotation.z=Math.PI/2;
+  // Vehicle axles run across the body width (Z axis), so tyre cylinders must too.
+  const tyre=mesh(w,new T.CylinderGeometry(r,r,width,48),rubber);
+  tyre.rotation.x=Math.PI/2;
   for(const s of [-1,1]){
-   cyl(w,s*(width/2+.012),0,0,r*.68,.035,dark,'x');
-   cyl(w,s*(width/2+.035),0,0,r*.51,.04,chrome,'x');
-   cyl(w,s*(width/2+.06),0,0,r*.17,.045,paint,'x');
-   for(let i=0;i<24;i++){const a=i*Math.PI/12;const t=box(w,s*width*.39,Math.sin(a)*(r+.008),Math.cos(a)*(r+.008),width*.22,.075,.045,dark);t.rotation.x=a}
+   // Layered hub, brake disc and alloy rim sit on the outer sidewall.
+   cyl(w,0,0,s*(width/2+.012),r*.72,.035,dark,'z',32);
+   cyl(w,0,0,s*(width/2+.035),r*.54,.04,chrome,'z',32);
+   cyl(w,0,0,s*(width/2+.06),r*.19,.045,paint,'z',24);
+   // Chunky but aligned tread blocks wrap around the tyre circumference.
+   for(let i=0;i<28;i++){
+    const a=i*Math.PI/14;
+    const tread=box(w,Math.cos(a)*(r+.006),Math.sin(a)*(r+.006),s*width*.39,.075,.045,width*.22,dark);
+    tread.rotation.z=a;
+   }
   }
   return w;
  }
