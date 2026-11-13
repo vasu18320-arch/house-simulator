@@ -2,30 +2,67 @@ export function createWorld(T,type){
  const g=new T.Group(),M=(c,r=.9)=>new T.MeshStandardMaterial({color:c,roughness:r});
  function add(geo,m,x,y,z){const o=new T.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;g.add(o);return o}
  function box(x,y,z,a,b,c,col){return add(new T.BoxGeometry(a,b,c),M(col),x,y,z)}
- function ball(x,y,z,a,b,c,col){const o=add(new T.SphereGeometry(1,18,14),M(col),x,y,z);o.scale.set(a,b,c);return o}
- function tree(x,z,s=1,pine=false){box(x,.7*s,z,.2*s,1.4*s,.2*s,0x79502f);if(pine){for(let j=0;j<3;j++)add(new T.ConeGeometry((1-j*.2)*s,1.7*s,9),M(j%2?0x285b3d:0x34764a),x,(1.4+j*.65)*s,z)}else ball(x,2.2*s,z,1.1*s,.95*s,1,0x4e914d)}
- add(new T.PlaneGeometry(260,260),M(type==='city'?0x82948c:type==='countryside'?0x80bd65:0x72ad70),0,-.13,0).rotation.x=-Math.PI/2;
- box(0,-.04,0,30,.08,27,type==='city'?0xa9aaa2:0x9bbd79);
- if(type==='mountain'){
-  for(let i=0;i<15;i++){let x=(i-7)*10,h=24+(i%4)*4;add(new T.ConeGeometry(9,h,7),M(i%2?0x718b9b:0x829eaa),x,h/2-1,-76);add(new T.ConeGeometry(3.2,8,7),M(0xf7fbff),x,h-4,-76)}
-  for(let i=0;i<48;i++)tree((Math.random()-.5)*70,-30+Math.random()*58,.7+Math.random()*.8,true);
-  for(let i=0;i<15;i++)box(-10+Math.sin(i*.4)*2,.02,-20+i*2.3,2.8,.05,2.4,0x64b8d0);
-  for(let i=0;i<5;i++){const c=ball(-38+i*18,25+(i%3)*2,-55,3,1,1.4,0xffffff);c.material.transparent=true;c.material.opacity=.8}
- }else if(type==='countryside'){
-  for(let i=0;i<9;i++){const x=(i-4)*12;box(x,.015,-35,10,.05,55,i%2?0x9dbb5f:0x78a94f);for(let r=0;r<6;r++)for(let k=0;k<12;k++)box(x-4+r*1.5,.25,-52+k*3,.07,.4,.07,0x668d3e)}
-  for(let i=0;i<34;i++)tree((Math.random()-.5)*90,-15-Math.random()*65,.7+Math.random()*.6,false);
-  for(let i=0;i<7;i++){const x=(i-3)*15;box(x,1.7,-57,7,3.4,6,0xe5d0a8);add(new T.ConeGeometry(5.3,2.7,4),M(0x9a6040),x,4.6,-57).rotation.y=Math.PI/4}
-  const pond=add(new T.CylinderGeometry(4.3,4.3,.12,36),M(0x64b9d4,.2),10,.02,7);pond.scale.z=.7;
- }else{
-  box(0,.01,-28,130,.08,12,0x454c55);box(0,.08,-20,130,.16,3,0xc9c5b9);
-  for(let x=-60;x<65;x+=8)box(x,.07,-28,.12,.02,4,0xf5e2a4);
-  for(let i=0;i<19;i++){const x=(i-9)*7,h=10+(i%5)*3;box(x,h/2,-58,5,h,7,[0xd2d8dc,0xc6b9ae,0xaebfca,0xe2d6c7][i%4]);box(x,h+.1,-58,5.3,.25,7.3,0x536779);for(let y=2;y<h-1;y+=2.3)for(let z=-54;z<-51;z+=2)box(x-1.2,y,z,.75,.95,.07,0x83cce3)}
-  for(let i=0;i<14;i++)tree((i-7)*8,13,.85,false);
-  for(let i=0;i<4;i++){const x=-34+i*22;box(x,2.2,-42,9,4.4,5,0xf1e8dc);box(x,1.5,-39.4,2.2,2.5,.08,0x6cacc7)}
+ function ball(x,y,z,a,b,c,col){const o=add(new T.SphereGeometry(1,20,16),M(col),x,y,z);o.scale.set(a,b,c);return o}
+ function tree(x,z,s=1,pine=false){
+  const trunk=box(x,.8*s,z,.24*s,1.6*s,.24*s,0x765039);
+  if(pine){for(let j=0;j<3;j++)add(new T.ConeGeometry((1-j*.19)*s,1.55*s,9),M(j===1?0x39704a:0x28583e),x,(1.35+j*.62)*s,z)}
+  else{ball(x,2.15*s,z,.9*s,.95*s,.88*s,0x397d49);ball(x-.35*s,2.05*s,z+.1*s,.55*s,.6*s,.55*s,0x4d9251);ball(x+.35*s,2.12*s,z-.1*s,.55*s,.6*s,.55*s,0x478849)}
  }
- for(let i=0;i<15;i++)box(0,.02,1+i*.72,1,.09,.62,type==='city'?0xbab9b3:0xb7aa91);
- for(const side of [-1,1])for(let i=0;i<10;i++){const x=side*(5.2+Math.random()*1.5),z=-5+i*1.2;ball(x,.18,z,.36,.17,.36,0x438d48);for(let j=0;j<3;j++)ball(x+(Math.random()-.5)*.3,.43,z+(Math.random()-.5)*.3,.09,.09,.09,[0xf4a6c4,0xffd65b,0xffffff][j])}
- for(let x=-14;x<=14;x+=2){box(x,.48,-13,.12,.95,.12,0x9d7954);box(x,.48,13,.12,.95,.12,0x9d7954)}box(0,.9,-13,28,.12,.12,0xb88a5c);
- box(-6,.62,4,2,.16,.6,0x98623b);box(-6,1.05,3.75,2,.8,.14,0x98623b);
+ // broad natural ground plane and a clean central home plot
+ add(new T.PlaneGeometry(260,260),M(type==='city'?0x8e9b91:type==='countryside'?0x82b85e:0x6f9d69),0,-.16,0).rotation.x=-Math.PI/2;
+ box(0,-.045,0,32,.09,29,type==='city'?0xb7b6ae:0xa9c68c);
+ if(type==='mountain'){
+  // layered mountain range with snow caps, rocky ridges and pine forest
+  for(let i=0;i<17;i++){
+   const x=(i-8)*8.5,h=23+(i%5)*3.7,depth=-88+(i%3)*2;
+   add(new T.ConeGeometry(10+(i%3),h,7),M(i%2?0x657f91:0x829ba7),x,h/2-1,depth).rotation.y=(i%2)*.18;
+   add(new T.ConeGeometry(3.8+(i%2),7.2,7),M(0xf2f5f1),x,h-4.4,depth+.1).rotation.y=.18;
+   add(new T.ConeGeometry(2.4,4.5,7),M(0xdce8e9),x+.8,h-7.5,depth+.2);
+  }
+  for(let i=0;i<72;i++){const x=(Math.random()-.5)*100,z=-18-Math.random()*58;tree(x,z,.65+Math.random()*.75,true)}
+  // winding blue stream with pebble banks
+  for(let i=0;i<22;i++){const z=-24+i*2.3,x=12+Math.sin(i*.36)*5;const r=box(x,.015,z,2.6,.035,2.4,0x4dabc8);r.rotation.y=.28}
+  for(let i=0;i<22;i++){const x=-45+i*4.2;ball(x,19+(i%4)*1.2,-52,.2,.2,.2,0xffffff)}
+  for(let i=0;i<15;i++)ball(-10+Math.sin(i*.7)*2,.03,-20+i*2.4,.28,.13,.22,0x8c9692);
+ }else if(type==='countryside'){
+  // patchwork fields with crop rows, hedges, orchard and a reflective pond
+  for(let i=0;i<8;i++){
+   const x=(i-3.5)*13;box(x,.005,-39,12,.035,66,i%2?0x9ebd63:0x79a94f);
+   for(let r=0;r<8;r++)for(let k=0;k<22;k++){const z=-68+k*2.8;const o=box(x-5+r*1.4,.17,z,.045,.3,.045,0x668b3e);o.rotation.z=.12}
+  }
+  for(let i=0;i<28;i++)tree((i-14)*5.7,-13-(i%4)*2,.62+(i%3)*.12,false);
+  // distant farm cottages with pitched roofs
+  for(let i=0;i<5;i++){const x=(i-2)*19;box(x,1.6,-66,7,3.2,6,0xe9d9b8);const roof=add(new T.ConeGeometry(5.6,2.8,4),M(0x985d3f),x,4.45,-66);roof.rotation.y=Math.PI/4;box(x,1,-62.9,1.25,2,.08,0x74513d)}
+  const pond=add(new T.CylinderGeometry(5.3,5.3,.13,48),M(0x55aeca,.18),15,.015,8);pond.scale.z=.72;
+  for(let i=0;i<16;i++){const a=i*Math.PI/8;ball(15+Math.cos(a)*5.2,.08,8+Math.sin(a)*3.7,.25,.12,.22,0x7a9d54)}
+ }else{
+  // modern city blocks: road, pavements, lane markings, shopfronts and lit windows
+  box(0,-.005,-30,150,.08,15,0x424b55);box(0,.045,-20,150,.1,3.2,0xd0c9b9);
+  for(let x=-72;x<74;x+=8)box(x,.07,-30,.16,.025,4.3,0xf5d98c);
+  box(0,.025,-39,150,.09,3.2,0xaaaeb0);
+  for(let i=0;i<19;i++){
+   const x=(i-9)*7.3,h=11+(i%5)*3.4,w=5.3;
+   box(x,h/2,-61,w,h,8,[0xc6d1d5,0xd8c9b9,0x9fb6c1,0xe0ded5][i%4]);
+   box(x,h+.08,-61,w+.18,.22,8.2,0x596c78);
+   for(let y=2.2;y<h-1;y+=2.5)for(let z=-56.8;z<-54.5;z+=2.4){
+    box(x-1.35,y,z,.92,1.25,.1,0x4c7082);box(x-1.35,y,z+.07,.76,1.08,.025,0x9ed4e2);
+    box(x+.55,y,z,.92,1.25,.1,0x4c7082);box(x+.55,y,z+.07,.76,1.08,.025,0xa7dce8);
+   }
+   for(let y=3.4;y<h;y+=5)box(x,y,-56.6,5.45,.12,.45,0x788f99);
+  }
+  // lower street-level stores and trees along the boulevard
+  for(let i=0;i<5;i++){const x=-36+i*18;box(x,2,-42,10,4,5,0xe8e5dc);box(x,1.55,-39.4,5,2.5,.1,0x6aa7bc);box(x,3.8,-39.4,10,.25,.12,0x526d7b)}
+  for(let i=0;i<16;i++)tree((i-8)*8,10,.72,false);
+  for(let x=-60;x<=60;x+=12){box(x,.6,-37,.12,1.2,.12,0x4c4e50);ball(x,1.35,-37,.16,.16,.16,0xffe2a1)}
+ }
+ // foreground footpath, neat low fence, flower beds and garden benches
+ for(let i=0;i<16;i++)box(0,.02,1+i*.78,1.05,.08,.66,type==='city'?0xb9b7b0:0xc3b69c);
+ for(const side of [-1,1]){
+  for(let i=0;i<11;i++){const x=side*(5.8+(i%2)*.35),z=-5+i*1.15;ball(x,.2,z,.42,.18,.4,0x3f8147);for(let j=0;j<3;j++)ball(x+(j-1)*.16,.45,z,.09,.09,.09,[0xe99bb7,0xffd15d,0xf7f2e8][j])}
+ }
+ for(let x=-14;x<=14;x+=2){box(x,.48,-13,.12,.95,.12,0x987653);box(x,.48,13,.12,.95,.12,0x987653)}
+ box(0,.95,-13,28,.12,.12,0xb88a5c);box(0,.95,13,28,.12,.12,0xb88a5c);
+ // garden bench with backrest
+ box(-6,.52,4,2.1,.16,.65,0x805638);box(-6,1.02,3.7,2.1,.82,.13,0x805638);
  return g;
 }
