@@ -118,44 +118,52 @@ export function createVehicle(T,name){
 }
 export function createVehicleShed(T){
  const g=new T.Group();
- const mat=(c,r=.82)=>new T.MeshStandardMaterial({color:c,roughness:r});
- const plaster=mat(0xe7e1d3),sage=mat(0x87988a),wood=mat(0x94765b),roof=mat(0x647d78),stone=mat(0xc8c1b2),dark=mat(0x58615d),glass=mat(0xb7d0cb,.35),gold=mat(0xc5a875,.35);
+ const mat=(c,r=.78,m=0)=>new T.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+ const plaster=mat(0xe7e8df),white=mat(0xf4f1e8),sage=mat(0x718a7d),roof=mat(0x405b62,.65,.12),stone=mat(0xbfc1b6),dark=mat(0x33464a,.7),glass=mat(0x8fb9bd,.22,.12),wood=mat(0x87664c),gold=mat(0xc2a16a,.25,.5);
  const box=(x,y,z,w,h,d,m)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;g.add(o);return o};
- const cyl=(x,y,z,r,h,m)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,h,24),m);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o};
- // A calm, courtyard-style carriage house: pale limewash, sage trim and a tiled green roof.
- box(0,.16,0,19,.32,13,stone);box(0,.34,0,18.7,.08,12.7,plaster);
- // Rear wall and low side wings make it feel like a designed outbuilding, not a warehouse.
- box(0,2.25,5.95,18.2,4.25,.35,plaster);
- box(-8.95,1.9,0,.35,3.6,12,sage);box(8.95,1.9,0,.35,3.6,12,sage);
- // Four elegant timber piers at the open front and two at the back.
- for(const x of [-8.7,-3.0,3.0,8.7]){
-  box(x,2.2,-5.95,.34,4.4,.34,wood);
-  box(x,4.35,-5.95,.62,.22,.62,gold);
- }
- for(const x of [-8.7,8.7])box(x,2.2,5.7,.34,4.4,.34,wood);
- // Pitched roof planes with broad eaves and fascia.
- const left=box(-4.65,4.65,0,9.9,.3,13.4,roof);left.rotation.z=-.16;
- const right=box(4.65,4.65,0,9.9,.3,13.4,roof);right.rotation.z=.16;
- box(0,5.02,0,.3,.34,13.5,wood);
- box(0,4.38,-5.94,18.1,.24,.28,wood);box(0,4.38,5.94,18.1,.24,.28,wood);
- // Rear wall gets a row of high clerestory windows and warm lanterns.
- for(const x of [-5.8,0,5.8]){
-  box(x,3.1,5.75,2.3,1.0,.08,wood);box(x,3.1,5.68,2.05,.76,.05,glass);
-  box(x,3.1,5.63,.06,.78,.04,gold);box(x,3.1,5.63,2.05,.06,.04,gold);
- }
+ const cyl=(x,y,z,r,h,m)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,h,28),m);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o};
+ const beam=(a,b,r,m)=>{const A=new T.Vector3(...a),B=new T.Vector3(...b),d=B.clone().sub(A),o=new T.Mesh(new T.CylinderGeometry(r,r,d.length(),12),m);o.position.copy(A.add(B).multiplyScalar(.5));o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());o.castShadow=true;g.add(o);return o};
+ // Spacious three-bay garage, deliberately open toward the vehicles' approach (-Z).
+ box(0,.16,0,19,.32,13.5,stone);box(0,.34,0,18.8,.08,13.3,white);
+ // Solid back wall and side walls: no giant featureless brown block.
+ box(0,2.5,6.45,18.2,4.8,.35,plaster);
+ box(-9.05,2.2,0,.32,4.2,12.8,plaster);box(9.05,2.2,0,.32,4.2,12.8,plaster);
+ // Three distinct open garage bays, with raised sectional doors visible overhead.
  for(const x of [-6,0,6]){
-  box(x,3.85,-5.72,.28,.55,.22,wood);
-  const l=box(x,3.55,-5.58,.28,.38,.18,gold);
+  box(x,4.35,-6.35,5.65,.34,.42,roof);
+  box(x-2.75,2.2,-6.25,.22,4.2,.32,sage);box(x+2.75,2.2,-6.25,.22,4.2,.32,sage);
+  box(x,4.0,-5.98,5.2,.14,.18,wood);
+  // Raised roll-up door slats above the opening.
+  for(let j=0;j<7;j++)box(x,3.25+j*.105,-6.0,5.05,.055,.09,mat(0xb8c3bc));
+  // Warm ceiling light over each bay.
+  box(x,3.85,-5.7,.5,.12,.32,gold);
+  // Number plate and subtle wall-mounted side lamps.
+  box(x,4.05,-6.12,.62,.28,.06,dark);
+  for(const s of [-1,1]){box(x+s*2.48,2.65,-6.0,.14,.5,.16,gold)}
  }
- // Discreet sage bay dividers and stone wheel stops keep each vehicle neatly parked.
- for(const x of [-5.9,0,5.9]){
-  box(x,.09,-.2,.09,.18,10.5,sage);
-  box(x,.12,3.6,4.1,.18,.24,stone);
+ // Continuous hipped roof with fascia, ridge and broad overhang.
+ const left=box(-4.65,4.78,0,9.9,.28,13.9,roof);left.rotation.z=-.13;
+ const right=box(4.65,4.78,0,9.9,.28,13.9,roof);right.rotation.z=.13;
+ box(0,5.08,0,.24,.28,14.0,wood);
+ box(0,4.48,-6.42,18.4,.22,.32,wood);
+ box(0,4.48,6.42,18.4,.22,.32,wood);
+ // Rear wall windows and tidy built-in storage.
+ for(const x of [-5.8,0,5.8]){
+  box(x,3.0,6.24,2.4,1.2,.08,wood);box(x,3.0,6.18,2.16,.96,.05,glass);
+  box(x,3.0,6.13,.06,.98,.035,gold);box(x,3.0,6.13,2.16,.06,.035,gold);
+  box(x,1.0,6.15,3.4,.12,.35,wood);
+  for(let j=0;j<4;j++)box(x-1.1+j*.72,1.45,6.12,.35,.72,.22,sage);
  }
- // Side planting troughs soften the structure.
- for(const x of [-8.35,8.35]){
-  box(x,.42,2.8,.65,.72,2.0,wood);
-  for(let i=0;i<4;i++){const leaf=cyl(x+(i-1.5)*.13,.95,2.8,.18,.55,sage);leaf.scale.set(.8,1.25,.8)}
+ // Decorative pilasters, base trim and a soft gradient-like two-tone facade.
+ for(const x of [-9,9]){box(x,2.2,-6.22,.42,4.35,.48,white);box(x,4.35,-6.22,.62,.22,.64,gold)}
+ box(0,.48,-6.25,18.2,.2,.25,sage);
+ // Floor bay guides and parking stops.
+ for(const x of [-6,0,6]){box(x-2.55,.08,0,.055,.12,10.8,sage);box(x+2.55,.08,0,.055,.12,10.8,sage);box(x,.12,3.8,4.6,.2,.25,stone)}
+ // Wall-mounted lanterns and planter boxes soften the garage.
+ for(const x of [-8.7,8.7]){
+  box(x,2.7,-5.8,.2,.55,.18,wood);box(x,2.7,-5.66,.25,.32,.16,gold);
+  box(x,.38,2.8,.7,.68,1.8,wood);
+  for(let j=0;j<4;j++)cyl(x+(j-1.5)*.13,.95,2.8,.16,.48,sage);
  }
  return g;
 }
