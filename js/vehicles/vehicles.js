@@ -98,7 +98,7 @@ export function createVehicle(T, name) {
     // Rear and front fenders.
     const f1=mesh(root,new T.TorusGeometry(.47,.035,8,28,Math.PI),paintDark,-.82,r,0);f1.rotation.y=Math.PI/2;f1.rotation.z=Math.PI;
     const f2=mesh(root,new T.TorusGeometry(.47,.035,8,28,Math.PI),paintDark,.82,r,0);f2.rotation.y=Math.PI/2;
-    tube([[.52,r+.9,0],[.52,r+1.25,0],[.15,r+1.36,0]],.025,chrome);
+    tube([.52,r+.9,0],[.52,r+1.25,0],.025); tube([.52,r+1.25,0],[.15,r+1.36,0],.025);
     return root;
   }
 
