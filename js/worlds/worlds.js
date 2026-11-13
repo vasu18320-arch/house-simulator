@@ -100,5 +100,49 @@ export function createWorld(T,type){
  }
  // Curved low hedge clusters create borders without blocking the garden.
  for(let i=0;i<9;i++){ball(-24+i*.8,.42,-14,.38,.42,.42,0x4f8950);ball(17+i*.8,.42,-16,.38,.42,.42,0x4f8950)}
+
+ // Expanded ornamental garden: layered beds, flowering borders, shade trees and warm path lights.
+ const shrubMat=[0x477e4b,0x568d50,0x6a9b5d].map(c=>M(c));
+ const flowerCols=[0xe9a4b7,0xffd477,0xf4f0df,0x9fb6dc,0xe8a56f];
+ function shrub(x,z,s=1){
+  ball(x,.28,z,.62*s,.3*s,.55*s,0x4d884f);
+  ball(x-.22*s,.48,z,.35*s,.34*s,.35*s,0x659b58);
+  ball(x+.2*s,.47,z+.08*s,.36*s,.32*s,.36*s,0x477f49);
+  for(let i=0;i<7;i++){const a=i*Math.PI*2/7;ball(x+Math.cos(a)*.34*s,.72*s,z+Math.sin(a)*.3*s,.11*s,.12*s,.11*s,flowerCols[i%flowerCols.length])}
+ }
+ // Curved planting beds along the outer garden edges, leaving the play lawn open.
+ for(let i=0;i<12;i++){
+  const x=-25+i*4.5;
+  shrub(x,-20+(i%3)*.55,.85+(i%2)*.18);
+  shrub(x,25-(i%3)*.6,.9);
+ }
+ for(let i=0;i<9;i++){
+  const z=-17+i*4.8;
+  shrub(-25,z,.95);shrub(25,z,1.0);
+ }
+ // Extra ornamental trees of varied heights, with visible trunks and layered crowns.
+ for(const [x,z,s] of [[-19,-10,1.15],[-11,-18,.9],[2,-19,1.0],[15,-19,1.1],[21,-5,.85],[-22,14,1.0],[12,25,.9],[-5,26,1.05]]){
+  tree(x,z,s,false);
+ }
+ // Flowering groundcover drifts and small round topiary clusters.
+ for(let row=0;row<4;row++){
+  for(let i=0;i<13;i++){
+   const x=-23+i*3.8+(row%2)*.7,z=-18+row*2.0;
+   ball(x,.12,z,.36,.12,.32,0x4c884c);
+   for(let j=0;j<4;j++)ball(x+(j-1.5)*.13,.27,z+(j%2)*.12,.075,.085,.075,flowerCols[(i+j+row)%flowerCols.length]);
+  }
+ }
+ for(const [x,z] of [[-17,3],[-13,20],[4,21],[17,11],[22,-3],[-22,-2],[7,-17]]){
+  for(let j=0;j<3;j++)shrub(x+(j-1)*.95,z,.72);
+ }
+ // Low stone edging and subtle lanterns around the new parking apron on the house's right.
+ box(13,.035,-.8,12,.07,14,0xb9b7a9);
+ for(let i=0;i<6;i++){
+  const x=8+i*2;
+  box(x,.5,6,.12,1,.12,0x6e6251);
+  ball(x,1.08,6,.13,.13,.13,0xffe2a0);
+ }
+ // A pair of low clipped hedges softens the parking edge.
+ for(let i=0;i<8;i++){ball(7.5+i*1.55,.38,6.8,.55,.38,.48,0x4b824b)}
  return g;
 }
