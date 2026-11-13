@@ -7,7 +7,7 @@ export function createHouse(T,world,tier){
   city:{base:0xd8e0df,top:0xf0f1eb,trim:0x6e8585,roof:0x435d68,stone:0xb9c3c0,wood:0x6c7770,accent:0xa9c1c0}
  };
  const p=palettes[world]||palettes.mountain;
- const cream=mat(p.top),wallBase=mat(p.base),trim=mat(p.trim),roof=mat(p.roof,.72,.12),stone=mat(p.stone),wood=mat(p.wood),accent=mat(p.accent),glass=mat(0x8fc4d2,.2,.15),darkGlass=mat(0x294653,.28),gold=mat(0xc6a66c,.28,.55),green=mat(0x638a68);
+ const cream=mat(p.top),wallBase=mat(p.base),trim=mat(p.trim),roof=mat(p.roof,.72,.12),stone=mat(p.stone),wood=mat(p.wood),accent=mat(p.accent),glass=mat(0x8fc4d2,.2,.15),darkGlass=mat(0x294653,.28),gold=mat(0xc6a66c,.28,.55),green=mat(0x638a68);roof.side=T.DoubleSide;
  const add=(geo,m,x,y,z,rx=0,ry=0,rz=0)=>{const o=new T.Mesh(geo,m);o.position.set(x,y,z);o.rotation.set(rx,ry,rz);o.castShadow=true;o.receiveShadow=true;g.add(o);return o};
  const box=(x,y,z,w,h,d,m)=>add(new T.BoxGeometry(w,h,d),m,x,y,z);
  const cyl=(x,y,z,r,h,m,n=28)=>add(new T.CylinderGeometry(r,r,h,n),m,x,y,z);
