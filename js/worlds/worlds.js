@@ -55,15 +55,50 @@ export function createWorld(T,type){
   for(let i=0;i<16;i++)tree((i-8)*8,10,.72,false);
   for(let x=-60;x<=60;x+=12){box(x,.6,-37,.12,1.2,.12,0x4c4e50);ball(x,1.35,-37,.16,.16,.16,0xffe2a1)}
  }
- // foreground footpath, neat low fence, flower beds and garden benches
+ // Foreground path, calm planted borders and usable garden furniture.
  for(let i=0;i<16;i++)box(0,.02,1+i*.78,1.05,.08,.66,type==='city'?0xb9b7b0:0xc3b69c);
  for(const side of [-1,1]){
   for(let i=0;i<11;i++){const x=side*(5.8+(i%2)*.35),z=-5+i*1.15;ball(x,.2,z,.42,.18,.4,0x3f8147);for(let j=0;j<3;j++)ball(x+(j-1)*.16,.45,z,.09,.09,.09,[0xe99bb7,0xffd15d,0xf7f2e8][j])}
  }
+ // Perimeter fence and lush planting to soften the large open lawn.
  for(let x=-28;x<=28;x+=2){box(x,.48,-24,.12,.95,.12,0x987653);box(x,.48,29,.12,.95,.12,0x987653)}
  for(let z=-24;z<=29;z+=2){box(-28,.48,z,.12,.95,.12,0x987653);box(28,.48,z,.12,.95,.12,0x987653)}
  box(0,.95,-24,56,.12,.12,0xb88a5c);box(0,.95,29,56,.12,.12,0xb88a5c);box(-28,.95,2,.12,.12,52,0xb88a5c);box(28,.95,2,.12,.12,52,0xb88a5c);
- // garden bench with backrest
- box(-6,.52,4,2.1,.16,.65,0x805638);box(-6,1.02,3.7,2.1,.82,.13,0x805638);
+ // Garden benches with four visible legs, armrests and supportive backs.
+ function bench(x,z,rot=0){
+  const b=new T.Group();b.position.set(x,0,z);b.rotation.y=rot;g.add(b);
+  const wood=M(0x806047),slat=M(0xb18a65),iron=M(0x465b58);
+  const part=(geo,m,px,py,pz)=>{const o=new T.Mesh(geo,m);o.position.set(px,py,pz);o.castShadow=true;o.receiveShadow=true;b.add(o);return o};
+  const bx=(px,py,pz,w,h,d,m)=>part(new T.BoxGeometry(w,h,d),m,px,py,pz);
+  bx(0,.78,0,2.25,.16,.62,slat);for(let i=-2;i<=2;i++)bx(i*.42,.88,0,.035,.04,.58,wood);
+  bx(0,1.28,-.25,2.25,.72,.14,slat);for(let i=-2;i<=2;i++)bx(i*.42,1.28,-.17,.035,.56,.04,wood);
+  for(const px of [-.88,.88])for(const pz of [-.2,.2])bx(px,.39,pz,.12,.78,.12,iron);
+  for(const px of [-1.12,1.12]){bx(px,1.02,0,.14,.12,.72,wood);bx(px,.94,-.25,.12,.72,.12,iron)}
+ }
+ bench(-15,5,.2);bench(-15,17,-.2);bench(8,19,Math.PI);bench(23,8,-Math.PI/2);
+ // Two sturdy garden swings with A-frame supports, crossbeam, chains and slatted seats.
+ function swing(x,z){
+  const frame=M(0x806047),metal=M(0x596b69),seat=M(0xb18a65);
+  const beam=(a,b,r,m)=>{const A=new T.Vector3(...a),B=new T.Vector3(...b),d=B.clone().sub(A),o=new T.Mesh(new T.CylinderGeometry(r,r,d.length(),12),m);o.position.copy(A.add(B).multiplyScalar(.5));o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());o.castShadow=true;g.add(o)};
+  for(const dx of [-1.15,1.15]){
+   beam([x+dx,.12,z-.72],[x,.12,z],.105,frame);
+   beam([x+dx,.12,z+.72],[x,.12,z],.105,frame);
+   beam([x+dx,.12,z-.72],[x+dx,3.05,z-.72],.085,frame);
+   beam([x+dx,.12,z+.72],[x+dx,3.05,z+.72],.085,frame);
+  }
+  const top=new T.Mesh(new T.CylinderGeometry(.12,.12,2.8,16),frame);top.rotation.z=Math.PI/2;top.position.set(x,3.05,z);g.add(top);
+  for(const dx of [-.42,.42]){beam([x+dx,2.95,z],[x+dx,1.05,z],.025,metal)}
+  const s=new T.Mesh(new T.BoxGeometry(1.05,.16,.52),seat);s.position.set(x,1.0,z);s.castShadow=true;g.add(s);
+  for(let i=-1;i<=1;i++) {const sl=new T.Mesh(new T.BoxGeometry(.32,.035,.48),frame);sl.position.set(x+i*.34,1.1,z);g.add(sl)}
+ }
+ swing(-21,12);swing(19,18);
+ // Additional layered greenery: shade trees, flowering shrubs and low hedges.
+ for(const [x,z,s] of [[-23,3,1.25],[-22,22,1.1],[24,22,1.2],[24,-13,1.05],[-12,24,.9],[5,24,.85]])tree(x,z,s,false);
+ for(const [x,z] of [[-20,8],[-18,20],[-8,22],[12,23],[22,3],[21,22],[-24,-7],[5,17]]){
+  ball(x,.22,z,.62,.22,.58,0x477e4a);
+  for(let j=0;j<5;j++)ball(x+(j-2)*.19,.48,z+(j%2)*.13,.14,.16,.14,[0xe9a8bb,0xf3d18b,0xf5efe0][j%3]);
+ }
+ // Curved low hedge clusters create borders without blocking the garden.
+ for(let i=0;i<9;i++){ball(-24+i*.8,.42,-14,.38,.42,.42,0x4f8950);ball(17+i*.8,.42,-16,.38,.42,.42,0x4f8950)}
  return g;
 }
