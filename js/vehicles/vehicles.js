@@ -114,9 +114,30 @@ export function createVehicle(T,name){
   for(let i=0;i<6;i++)box(root,rear-.83+i*.14,1.035,0,.025,.018,W*.70,chrome);
   for(const s of [-1,1])box(root,rear-.60,.99,s*.43,.34,.20,.20,paint);
  }
+ // Premium exterior details: door seams, mirrors, registration plates and trim.
+ for(const s of [-1,1]){
+  box(root,0,.61,s*(W*.51),L*.58,.06,.035,dark);
+  box(root,cabX+.30,1.10,s*(W*.44),.17,.035,.025,chrome);
+  tube(root,[front+.62,1.43,s*.48],[front+.55,1.58,s*.76],.025,chrome);
+  ball(root,front+.53,1.59,s*.79,.16,.09,.13,paint);
+  for(const dx of [-.35,.45])box(root,dx,.88,s*(W*.505),.018,.48,.025,dark);
+  box(root,0,.69,s*(W*.53),L*.55,.045,.035,chrome);
+  ball(root,front+.18,.94,s*(W*.54),.055,.045,.025,lamp);
+  ball(root,rear-.24,.92,s*(W*.54),.05,.04,.025,red);
+ }
+ box(root,front-.17,.68,0,.045,.16,.52,chrome);
+ box(root,front-.20,.68,0,.025,.105,.38,mat(0xe5e8df,.55));
+ box(root,rear+.13,.72,0,.04,.15,.62,chrome);
+ box(root,rear+.16,.72,0,.025,.1,.44,mat(0xe5e8df,.55));
+ box(root,front-.145,.55,0,.05,.11,W*.62,dark);
+ for(const s of [-1,1])box(root,front+.38,1.105,s*.42,.9,.018,.025,chrome);
+ ball(root,front-.16,.94,0,.075,.07,.075,chrome);
+ const antenna=mesh(root,new T.CylinderGeometry(.012,.025,.32,8),dark,cabX+.48,1.91,.35);antenna.rotation.z=-.25;
+ if(isSUV||isCar)box(root,cabX,1.766,0,cabL*.52,.025,W*.43,dark);
+ cyl(root,rear+.17,.39,W*.34,.055,.22,chrome,'x',16);
  root.userData.kind=name;return root;
 }
-export function createVehicleShed(T){
+
  const g=new T.Group();
  const mat=(c,r=.78,m=0)=>new T.MeshStandardMaterial({color:c,roughness:r,metalness:m});
  const plaster=mat(0xe7e8df),white=mat(0xf4f1e8),sage=mat(0x718a7d),roof=mat(0x405b62,.65,.12),stone=mat(0xbfc1b6),dark=mat(0x33464a,.7),glass=mat(0x8fb9bd,.22,.12),wood=mat(0x87664c),gold=mat(0xc2a16a,.25,.5);
