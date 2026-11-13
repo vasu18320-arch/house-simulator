@@ -1,52 +1,118 @@
 export function createHouse(T,world,tier){
- const g=new T.Group(),M=(c,r=.82)=>new T.MeshStandardMaterial({color:c,roughness:r});
- const box=(x,y,z,a,b,c,col)=>{const o=new T.Mesh(new T.BoxGeometry(a,b,c),M(col));o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;g.add(o);return o};
- const cyl=(x,y,z,r,h,col,n=20)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,h,n),M(col));o.position.set(x,y,z);o.castShadow=true;g.add(o);return o};
- const sphere=(x,y,z,r,col)=>{const o=new T.Mesh(new T.SphereGeometry(r,20,14),M(col));o.position.set(x,y,z);g.add(o);return o};
- const window=(x,y,z,w=1.15,h=1.2)=>{box(x,y,z,w,h,.12,0x405f6b);box(x,y,z+.075,w*.84,h*.82,.035,0x9bcfdf);box(x,y,z+.1,.07,h,.05,0xf4ead7);box(x,y,z+.1,w,.07,.05,0xf4ead7);box(x,y+h*.5,z+.09,w,.055,.04,0xf4ead7)};
- const s=[.9,1.08,1.28][tier],w=7*s,h=3.55*s,d=5.8*s;
- const wall=world==='mountain'?[0xe5d7c3,0xece5d9,0xf0e9dc][tier]:world==='countryside'?[0xe8d2ad,0xf1e0bf,0xf5e9d1][tier]:[0xd9e3e6,0xe9eff0,0xf5f5f0][tier];
- const roof=world==='mountain'?0x405866:world==='countryside'?0x95583e:0x354e60,trim=world==='city'?0x536b77:0x765039;
- // main living space and foundation, with a visible raised plinth
- box(0,h/2,-5,w,h,d,wall);box(0,.16,-5,w+.35,.32,d+.35,trim);
- // tiered but believable home architecture: broad pitched roofs, not abstract blocks
- if(tier===0){
-  const a=box(-w*.24,h+.52,-5,w*.62,.22,d+.65,roof);a.rotation.z=-.43;
-  const b=box(w*.24,h+.52,-5,w*.62,.22,d+.65,roof);b.rotation.z=.43;
-  box(0,h+.88,-5,.18,.18,d+.7,trim);
- }else{
-  box(0,h+.16,-5,w+.42,.28,d+.4,roof);
-  const a=box(-w*.25,h+.58,-5,w*.62,.22,d+.62,roof);a.rotation.z=-.4;
-  const b=box(w*.25,h+.58,-5,w*.62,.22,d+.62,roof);b.rotation.z=.4;
-  box(0,h+.94,-5,.18,.18,d+.68,trim);
-  // a modest front-facing gable with timber fascia
-  const gable=new T.Mesh(new T.ConeGeometry(w*.36,1.65,4),M(roof));gable.position.set(0,h+.88,-1.8);gable.rotation.y=Math.PI/4;gable.scale.z=.45;g.add(gable);
+ const g=new T.Group();
+ const mat=(c,r=.84)=>new T.MeshStandardMaterial({color:c,roughness:r});
+ const palettes={
+  mountain:{wall:0xe8dfd0,trim:0x9c8065,roof:0x536b70,stone:0xbab2a2,wood:0x765d49},
+  countryside:{wall:0xeee2c9,trim:0xb68a67,roof:0x78866c,stone:0xc8bda7,wood:0x80634b},
+  city:{wall:0xe7e9e3,trim:0x9ba99e,roof:0x657b7b,stone:0xc5c9be,wood:0x66766d}
+ };
+ const p=palettes[world]||palettes.countryside;
+ const cream=mat(p.wall),trim=mat(p.trim),roof=mat(p.roof),stone=mat(p.stone),wood=mat(p.wood),glass=mat(0x8fb9bd,.24),darkGlass=mat(0x38535a,.35),gold=mat(0xc7a76b,.32),green=mat(0x66866a);
+ const add=(geo,m,x,y,z,rx=0,ry=0,rz=0)=>{const o=new T.Mesh(geo,m);o.position.set(x,y,z);o.rotation.set(rx,ry,rz);o.castShadow=true;o.receiveShadow=true;g.add(o);return o};
+ const box=(x,y,z,w,h,d,m)=>add(new T.BoxGeometry(w,h,d),m,x,y,z);
+ const cyl=(x,y,z,r,h,m,n=24)=>add(new T.CylinderGeometry(r,r,h,n),m,x,y,z);
+ const cone=(x,y,z,r,h,m,n=4)=>add(new T.ConeGeometry(r,h,n),m,x,y,z,0,Math.PI/4,0);
+ const sphere=(x,y,z,r,m)=>add(new T.SphereGeometry(r,16,12),m,x,y,z);
+ const window=(x,y,z,w=1.05,h=1.25)=>{
+  box(x,y,z,w+.16,h+.16,.13,wood);box(x,y,z-.075,w,h,.045,darkGlass);
+  box(x,y,z-.11,.065,h,.045,gold);box(x,y,z-.11,w,.065,.045,gold);
+  box(x,y,z-.12,.045,h,.045,trim);
+  box(x,y-h*.56,z-.08,w+.22,.12,.22,trim);
+ };
+ const door=(x,y,z,w=1.25,h=2.35)=>{
+  box(x,y,z,w+.2,h+.2,.2,wood);box(x,y,z-.12,w,h,.07,mat(0x80634d));
+  box(x,y,z-.17,.06,h,.04,gold);sphere(x+w*.32,y,z-.2,.065,gold);
+  box(x,y+h*.26,z-.19,w*.55,.08,.035,gold);
+ };
+ const tierScale=[1,1.12,1.22][Math.min(2,tier)]||1;
+ const W=7.4*tierScale,D=6.2*tierScale,H=3.65*tierScale;
+ // Broad stone foundation and warm, softly coloured main house.
+ box(0,.18,-4.6,W+.5,.36,D+.5,stone);
+ box(0,H/2+.35,-4.6,W,H,D,cream);
+ box(0,.43,-4.6,W+.12,.22,D+.12,trim);
+ // Main pitched roof with clear eaves and ridge.
+ box(-W*.245,H+.62,-4.6,W*.57,.22,D+.55,roof).rotation.z=-.43;
+ box(W*.245,H+.62,-4.6,W*.57,.22,D+.55,roof).rotation.z=.43;
+ box(0,H+1.02,-4.6,.2,.2,D+.65,trim);
+ box(0,H+.28,-1.47,3.25,.18,1.65,roof);
+ // Welcoming recessed porch, framed entry and steps.
+ box(0,1.45,-1.42,3.25,2.9,.22,trim);
+ box(0,1.45,-1.27,2.88,2.68,.13,cream);
+ door(0,1.48,-1.17,1.28,2.45);
+ for(const x of [-1.45,1.45]){
+  box(x,1.52,-.56,.17,2.95,.17,wood);
+  box(x,.16,-.12,.9,.28,.58,stone);
+  box(x,3.04,-1.35,.22,.22,.22,gold);
  }
- // inviting front porch, substantial door, framed windows and lanterns
- box(0,1.28,-1.95,1.25,2.55,.2,trim);box(.38,1.2,-1.82,.075,.075,.04,0xe9bd6a);
- box(0,2.65,-1.1,2.8,.18,1.55,roof);
- for(const x of [-1.22,1.22])box(x,1.35,-.48,.13,2.7,.13,trim);
- box(0,.18,-.35,3.7,.32,2.2,0xbdb29f);box(0,.07,3.5,6.4,.14,4.8,world==='city'?0x929b9e:0xc0b69f);
- for(const x of [-w*.32,w*.32])window(x,2.05,-1.92,1.4,1.35);
- // dormer windows on larger homes
- if(tier>0)for(const x of [-w*.23,w*.23]){
-  box(x,h+.72,-4.2,1.45,1.1,.22,wall);window(x,h+.73,-4.04,.75,.72);
-  const cap=box(x,h+1.34,-4.2,1.75,.16,1.1,roof);cap.rotation.z=0;
+ box(0,.2,-.08,4.1,.3,1.15,stone);
+ // Symmetrical, generous windows on the front elevation.
+ for(const x of [-W*.32,W*.32]){
+  window(x,2.2,-1.48,1.35,1.48);
+  box(x,1.35,-1.35,1.5,.1,.18,trim);
  }
- // tidy porch planters, greenery, pathway stones and a chimney
- for(const x of [-2.0,2.0]){
-  cyl(x,.34,-.35,.32,.65,0xa96f4d);sphere(x,.95,-.35,.42,0x4d914e);
-  for(let j=0;j<3;j++)sphere(x+(j-1)*.18,1.08,-.35,.19,[0x4c8d4a,0x639e54,0x3e7e43][j]);
+ // Side wall windows add a lived-in, finished silhouette.
+ for(const z of [-6.0,-3.2])window(-W*.505,2.15,z,.95,1.15);
+ // Chimney and tasteful garden details.
+ box(-W*.34,H+1.05,-6.65,.58,1.9,.62,trim);
+ box(-W*.34,H+2.04,-6.65,.76,.16,.78,stone);
+ for(const x of [-2.3,2.3]){
+  box(x,.28,-.65,.72,.55,.7,stone);
+  cyl(x,.86,-.65,.3,.68,green);
+  for(let j=0;j<3;j++)sphere(x+(j-1)*.17,1.08,-.65,.19,green);
  }
- box(-w*.34,h+.75,-6.9,.55,1.9,.55,trim);box(-w*.34,h+1.75,-6.9,.72,.12,.72,0x6a6d6b);
- // side extension / garage wing on grand house, with a warm timber pergola
- if(tier===2){
-  box(w*.62,1.75,-5,3.7,3.5,5.8,wall);
-  const wing=box(w*.62,3.58,-5,4.0,.25,6.1,roof);
-  box(w*.62,1.1,-1.95,2.2,2.2,.12,0x496d7a);
-  for(const x of [w*.43,w*.81])box(x,1.7,-1.85,.13,3.4,.13,trim);
-  for(let x=-3;x<=3;x+=1.5)box(x,.13,1.0,.09,2.4,.09,trim);
-  box(0,1.35,2.2,6.3,.12,.12,trim);
+ // Stepping-stone path to the front door.
+ for(let i=0;i<5;i++)box(0,.08,1.0+i*1.0,1.3,.12,.68,stone);
+ if(tier===1){
+  // Larger family home: a real upper storey with dormer windows and a side sunroom.
+  box(0,H+1.0,-4.6,W*.72,1.8,D*.68,cream);
+  box(-W*.18,H+2.08,-4.6,W*.48,.2,D*.72,roof).rotation.z=-.42;
+  box(W*.18,H+2.08,-4.6,W*.48,.2,D*.72,roof).rotation.z=.42;
+  for(const x of [-W*.22,W*.22])window(x,H+1.05,-1.48,1.12,1.12);
+  box(W*.57,1.85,-4.7,3.0,3.7,4.6,cream);
+  box(W*.57,3.76,-4.7,3.25,.2,4.85,roof);
+  window(W*.57,2.0,-2.34,1.35,1.4);
+ }
+ if(tier>=2){
+  // CASTLE ESTATE: a majestic central keep, flanking round towers and a grand entrance.
+  // The extra stonework, tall towers, crenellations and copper-toned roofs create a castle silhouette.
+  const tower=(x,z,r,h)=>{
+   const baseY=.38;
+   cyl(x,baseY+h/2,z,r,h,stone,32);
+   cyl(x,baseY+h*.72,z,r+.035,.22,trim,32);
+   // narrow arched-looking slit windows on visible faces
+   for(const a of [-.7,.7,Math.PI]){
+    const wx=x+Math.sin(a)*(r+.04),wz=z+Math.cos(a)*(r+.04);
+    box(wx,baseY+h*.57,wz,.2,1.15,.12,darkGlass);
+    box(wx,baseY+h*.57,wz-.08,.055,1.25,.055,gold);
+   }
+   cyl(x,baseY+h+.12,z,r+.18,.28,trim,32);
+   // merlons around the parapet
+   for(let i=0;i<12;i++){const a=i*Math.PI/6;box(x+Math.cos(a)*(r+.12),baseY+h+.42,z+Math.sin(a)*(r+.12),.28,.62,.28,stone)}
+   cone(x,baseY+h+1.35,z,r+.2,1.9,roof,8);
+   cyl(x,baseY+h+2.35,z,.07,.55,gold,12);
+   cone(x,baseY+h+2.72,z,.12,.25,gold,8);
+  };
+  // castle keep rises behind the entry block
+  box(0,H/2+1.2,-5.0,W*.68,H+2.0,D*.72,cream);
+  box(0,H+2.35,-5.0,W*.73,.3,D*.76,trim);
+  for(const x of [-W*.24,W*.24])window(x,H+1.25,-2.68,1.05,1.4);
+  // Four tall corner towers; front towers are larger and frame the gateway.
+  tower(-W*.48,-1.9,1.05,7.0);tower(W*.48,-1.9,1.05,7.0);
+  tower(-W*.48,-8.0,.88,5.6);tower(W*.48,-8.0,.88,5.6);
+  // Grand arched gate effect using layered portal, double doors and a balcony.
+  box(0,2.15,-1.2,2.6,3.8,.42,stone);
+  box(0,2.0,-.94,1.78,3.35,.18,wood);
+  box(0,2.0,-.82,1.42,3.05,.08,mat(0x665342));
+  box(0,3.92,-.88,2.9,.24,.65,gold);
+  box(0,4.18,-1.1,3.5,.16,.9,trim);
+  for(const x of [-1.65,1.65]){box(x,4.55,-1.1,.18,.95,.18,stone);sphere(x,5.08,-1.1,.18,gold)}
+  // Decorative battlements along the keep roofline.
+  for(let x=-3.3;x<=3.31;x+=.72)box(x,H+3.0,-1.75,.34,.68,.34,stone);
+  // Softly landscaped castle forecourt.
+  box(0,.08,2.1,12,.16,5.4,stone);
+  for(const x of [-5.0,5.0])for(const z of [0.0,3.2]){
+   cyl(x,.42,z,.42,.72,trim);sphere(x,1.15,z,.48,green);
+  }
  }
  return g;
 }
