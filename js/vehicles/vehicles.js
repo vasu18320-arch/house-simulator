@@ -145,10 +145,10 @@ export function createVehicleShed(T){
  const left=box(-4.65,4.78,0,9.9,.28,13.9,roof);left.rotation.z=.13;
  const right=box(4.65,4.78,0,9.9,.28,13.9,roof);right.rotation.z=-.13;
  box(0,5.08,0,.24,.28,14.0,wood);
- box(0,4.48,6.42,18.4,.22,.32,wood);
+ box(0,4.48,-6.42,18.4,.22,.32,wood);
  box(0,4.48,6.42,18.4,.22,.32,wood);
  // Rear wall windows and tidy built-in storage.
- for(const x of [5.8,0,5.8]){
+ for(const x of [-5.8,0,5.8]){
   box(x,3.0,-6.24,2.4,1.2,.08,wood);box(x,3.0,-6.18,2.16,.96,.05,glass);
   box(x,3.0,-6.13,.06,.98,.035,gold);box(x,3.0,-6.13,2.16,.06,.035,gold);
   box(x,1.0,-6.15,3.4,.12,.35,wood);
