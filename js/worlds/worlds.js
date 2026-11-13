@@ -10,7 +10,7 @@ export function createWorld(T,type){
  }
  // broad natural ground plane and a clean central home plot
  add(new T.PlaneGeometry(260,260),M(type==='city'?0x8e9b91:type==='countryside'?0x82b85e:0x6f9d69),0,-.16,0).rotation.x=-Math.PI/2;
- box(0,-.045,0,32,.09,29,type==='city'?0xb7b6ae:0xa9c68c);
+ box(0,-.045,0,58,.09,54,type==='city'?0xb7b6ae:0xa9c68c);
  if(type==='mountain'){
   // layered mountain range with snow caps, rocky ridges and pine forest
   for(let i=0;i<17;i++){
@@ -60,8 +60,9 @@ export function createWorld(T,type){
  for(const side of [-1,1]){
   for(let i=0;i<11;i++){const x=side*(5.8+(i%2)*.35),z=-5+i*1.15;ball(x,.2,z,.42,.18,.4,0x3f8147);for(let j=0;j<3;j++)ball(x+(j-1)*.16,.45,z,.09,.09,.09,[0xe99bb7,0xffd15d,0xf7f2e8][j])}
  }
- for(let x=-14;x<=14;x+=2){box(x,.48,-13,.12,.95,.12,0x987653);box(x,.48,13,.12,.95,.12,0x987653)}
- box(0,.95,-13,28,.12,.12,0xb88a5c);box(0,.95,13,28,.12,.12,0xb88a5c);
+ for(let x=-28;x<=28;x+=2){box(x,.48,-24,.12,.95,.12,0x987653);box(x,.48,29,.12,.95,.12,0x987653)}
+ for(let z=-24;z<=29;z+=2){box(-28,.48,z,.12,.95,.12,0x987653);box(28,.48,z,.12,.95,.12,0x987653)}
+ box(0,.95,-24,56,.12,.12,0xb88a5c);box(0,.95,29,56,.12,.12,0xb88a5c);box(-28,.95,2,.12,.12,52,0xb88a5c);box(28,.95,2,.12,.12,52,0xb88a5c);
  // garden bench with backrest
  box(-6,.52,4,2.1,.16,.65,0x805638);box(-6,1.02,3.7,2.1,.82,.13,0x805638);
  return g;
