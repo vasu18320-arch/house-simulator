@@ -40,15 +40,9 @@ export function createHouse(T,world,tier){
  box(0,.48,cz,W+.12,.2,D+.12,trim);
  // Elegant dark roof with real gable geometry: two clean sloping planes.
  const ridgeY=H+1.45,eaveY=H+.12,zFront=cz+D/2+.32,zBack=cz-D/2-.32;
- const roofPlane=(side)=>{
-  const x0=side<0?-W/2-.38:0,x1=side<0?0:W/2+.38;
-  const y0=side<0?eaveY:ridgeY,y1=side<0?ridgeY:eaveY;
-  const geo=new T.BufferGeometry();
-  const v=[x0,y0,zBack,x1,y1,zBack,x1,y1,zFront,x0,y0,zFront];
-  geo.setAttribute('position',new T.Float32BufferAttribute(v,3));geo.setIndex([0,1,2,0,2,3]);geo.computeVertexNormals();
-  return add(geo,roof,0,0,0);
- };
- roofPlane(-1);roofPlane(1);
+ const slope=Math.atan2(ridgeY-eaveY,W/2),panelLength=Math.hypot(W/2,ridgeY-eaveY);
+ const roofL=box(-W/4,(ridgeY+eaveY)/2,cz,panelLength,.24,D+.9,roof);roofL.rotation.z=slope;
+ const roofR=box(W/4,(ridgeY+eaveY)/2,cz,panelLength,.24,D+.9,roof);roofR.rotation.z=-slope;
  box(0,ridgeY+.04,cz,.22,.2,D+.9,trim);
  // Front gable infill and decorative fascia, facing the camera (+Z).
  const gable=new T.BufferGeometry();
@@ -87,8 +81,8 @@ export function createHouse(T,world,tier){
  if(tier===1){
   // Upper family suite, balanced dormers and a sunroom wing.
   gradientBox(0,H+1.25,cz,W*.68,2.15,D*.62,p.base,p.top);
-  box(-W*.19,H+2.38,cz,W*.48,.22,D*.68,roof).rotation.z=-.42;
-  box(W*.19,H+2.38,cz,W*.48,.22,D*.68,roof).rotation.z=.42;
+  box(-W*.19,H+2.38,cz,W*.48,.22,D*.68,roof).rotation.z=.42;
+  box(W*.19,H+2.38,cz,W*.48,.22,D*.68,roof).rotation.z=-.42;
   for(const x of [-W*.2,W*.2])window(x,H+1.25,front+.05,1.15,1.08);
   box(W*.58,1.9,cz,3.1,3.8,4.8,cream);
   box(W*.58,3.88,cz,3.35,.22,5.05,roof);
@@ -115,8 +109,8 @@ export function createHouse(T,world,tier){
   // Central keep's steep roof and dormer details.
   const kY=8.1;
   box(0,kY,cz,7.2,.32,D*.72,trim);
-  const left=box(-1.8,9.05,cz,3.9,.24,D*.78,roof);left.rotation.z=-.55;
-  const right=box(1.8,9.05,cz,3.9,.24,D*.78,roof);right.rotation.z=.55;
+  const left=box(-1.8,9.05,cz,3.9,.24,D*.78,roof);left.rotation.z=.55;
+  const right=box(1.8,9.05,cz,3.9,.24,D*.78,roof);right.rotation.z=-.55;
   for(const x of [-2.15,2.15])window(x,5.3,front+.18,1.0,1.45);
   // Towers flank the front entrance and rear keep corners.
   tower(-W*.48,front-.55,1.12,7.4);tower(W*.48,front-.55,1.12,7.4);
