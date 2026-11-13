@@ -33,6 +33,8 @@ export function createVehicle(T,name){
   tube(root,[0,r+.58,0],[.48,r+.62,0],.03,chrome);tube(root,[.48,r+.62,0],[.58,r+.83,0],.03,chrome);
   tube(root,[-.28,r+.05,0],[-.48,r+.44,0],.03,chrome);box(root,-.47,r+.47,0,.4,.08,.23,seat);
   cyl(root,-.28,r+.05,.14,.12,.08,dark,'z');tube(root,[-.88,r,.14],[-.28,r+.05,.14],.012,chrome);tube(root,[-.28,r+.05,.14],[.25,r,.14],.012,chrome);
+  // Bicycle handlebars are at +X; flip its local heading so it faces with the cars.
+  root.userData.yawOffset=Math.PI;
   return root;
  }
  if(name==='Motorcycle'){
@@ -47,6 +49,8 @@ export function createVehicle(T,name){
   tube(root,[.82,r,0],[.58,r+.68,0],.045,chrome);
   box(root,.84,r+.75,0,.16,.14,.42,dark);ball(root,.87,r+.82,.02,.12,.11,.13,lamp);
   for(const x of [-.82,.82]){const f=mesh(root,new T.TorusGeometry(.46,.035,8,30,Math.PI),paint,x,r,0);f.rotation.y=Math.PI/2;f.rotation.z=x<0?Math.PI:0}
+  // Headlamp and front fork are at +X; reverse the local heading for fleet alignment.
+  root.userData.yawOffset=Math.PI;
   return root;
  }
  if(name==='Tractor'){
